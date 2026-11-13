@@ -1,27 +1,65 @@
-name: Reel toutes les 4 h
+name: Agent Reels Mi-Haven (10 par jour)
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    # 10 passages par jour (heures UTC ; Casablanca = UTC+1)
+    - cron: '0 0,2,5,7,10,12,14,17,19,21 * * *'
   workflow_dispatch:
+    inputs:
+      test:
+        description: 'Test : fabriquer un Reel sans rien publier'
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency: post
 jobs:
   post:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Publier le prochain Reel
+      - name: Outils
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          npm ci --silent || npm i --silent
+      - name: Reel déjà prêt dans la file ?
+        id: q
+        run: |
+          if [ "${{ inputs.test }}" = "true" ]; then echo "pending=0" >> $GITHUB_OUTPUT; exit 0; fi
+          echo "pending=$(node -e "const q=require('./queue.json'),d=require('./published.json');console.log(q.some(x=>!d.some(y=>y.id===x.id))?1:0)")" >> $GITHUB_OUTPUT
+      - name: Publier le Reel de la file
+        if: steps.q.outputs.pending == '1'
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
         run: node publish.mjs
+      - name: Créer un nouveau Reel
+        if: steps.q.outputs.pending == '0'
+        run: node gen/make.mjs
+      - name: Rendre le Reel
+        if: steps.q.outputs.pending == '0'
+        env:
+          CHROME: /usr/bin/google-chrome
+        run: node gen/render.mjs
+      - name: Publier le nouveau Reel
+        if: steps.q.outputs.pending == '0' && inputs.test != true
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: node gen/post.mjs
+      - name: Garder une copie (7 jours)
+        if: steps.q.outputs.pending == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: reel-${{ github.run_number }}
+          path: gen/build/reel.mp4
+          retention-days: 7
       - name: Noter la publication
+        if: always()
         run: |
           git config user.name "mihaven-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add published.json
-          git diff --cached --quiet || (git commit -m "Reel publié" && git push)
+          git add published.json history.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "Reel publié" && git pull --rebase -q && git push)
