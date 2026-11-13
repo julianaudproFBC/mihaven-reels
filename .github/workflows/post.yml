@@ -1,0 +1,27 @@
+name: Reel toutes les 4 h
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: post
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Publier le prochain Reel
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: node publish.mjs
+      - name: Noter la publication
+        run: |
+          git config user.name "mihaven-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add published.json
+          git diff --cached --quiet || (git commit -m "Reel publié" && git push)
