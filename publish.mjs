@@ -1,7 +1,8 @@
 // Publie le prochain Reel de queue.json sur Instagram (API Instagram, connexion Instagram), puis note-le dans published.json.
-// Variables : IG_TOKEN (jeton longue durée du compte), PAGES_URL (adresse publique des vidéos, GitHub Pages).
+// Variables : IG_TOKEN (jeton utilisateur Facebook longue durée, droits instagram_content_publish), PAGES_URL (adresse publique des vidéos, GitHub Pages).
 import fs from 'node:fs';
-const API = 'https://graph.instagram.com/v21.0';
+const API = 'https://graph.facebook.com/v21.0';
+const IG_ID = process.env.IG_ID || '17841475966746330'; // @mihaven.ma
 const token = process.env.IG_TOKEN, base = (process.env.PAGES_URL || '').replace(/\/$/, '');
 if (!token) { console.log('IG_TOKEN absent : rien à faire'); process.exit(0); }
 const queue = JSON.parse(fs.readFileSync('queue.json', 'utf8'));
@@ -11,7 +12,7 @@ if (!next) { console.log('File vide : tout est publié'); process.exit(0); }
 const call = async (path, params = {}, method = 'GET') => {
   const u = new URL(API + path); for (const [k, v] of Object.entries({ ...params, access_token: token })) u.searchParams.set(k, v);
   const r = await fetch(u, { method }); const j = await r.json(); if (j.error) throw new Error(`${path}: ${j.error.message}`); return j; };
-const me = await call('/me', { fields: 'id,username' });
+const me = await call(`/${IG_ID}`, { fields: 'id,username' });
 if (me.username !== (process.env.IG_USERNAME || 'mihaven.ma')) throw new Error(`compte inattendu : ${me.username}`);
 const video_url = `${base}/${next.video}`;
 console.log('publie', next.id, 'depuis', video_url);
