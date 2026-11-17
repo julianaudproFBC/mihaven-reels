@@ -84,7 +84,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 300), DIR = new THREE.Vector3(1, 1.05, 1).normalize();
-const BASE = () => innerWidth < 820 ? [5, 6] : [3, 1];
+const BASE = () => innerWidth < 820 ? [4, 5] : [1, -3.5];
 const view = { x: BASE()[0], z: BASE()[1], zoom: 1, tx: BASE()[0], tz: BASE()[1], tzoom: 1, suit: null };
 const hemi = new THREE.HemisphereLight(0xfff4e0, 0x7a6f86, 0.62); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff0d8, 0.85); sun.position.set(-18, 34, 12); sun.castShadow = true;
@@ -256,7 +256,7 @@ function fete() { const a = TEAM[0]; parle(a, 'Publié sur @mihaven.ma !', 5000)
 function proj(v, el, dy) { const p = v.clone().project(cam); el.style.left = ((p.x + 1) / 2 * innerWidth) + 'px'; el.style.top = ((1 - p.y) / 2 * innerHeight + (dy || 0)) + 'px'; }
 
 // ---------- caméra et pointeur
-function cadre() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); const haut = (w < 820 ? 52 : 30) / view.zoom, larg = haut * w / h; cam.left = -larg / 2; cam.right = larg / 2; cam.top = haut / 2; cam.bottom = -haut / 2; cam.updateProjectionMatrix(); }
+function cadre() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); const haut = (w < 820 ? 52 : 34) / view.zoom, larg = haut * w / h; cam.left = -larg / 2; cam.right = larg / 2; cam.top = haut / 2; cam.bottom = -haut / 2; cam.updateProjectionMatrix(); }
 addEventListener('resize', cadre);
 const ray = new THREE.Raycaster(), souris = new THREE.Vector2(); let glisse = null, pts = {};
 function vise(e) { souris.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(souris, cam); const h = ray.intersectObjects(TEAM.map(a => a.g), true)[0]; return h ? h.object.userData.agent : null; }
