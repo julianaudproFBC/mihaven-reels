@@ -7,152 +7,303 @@
 <title>Le Bureau des Agents IA</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;700&display=swap">
 <style>
-/* Mise en page : la scène du bureau à gauche, le fil d'activité à droite ; tout s'empile sur téléphone. */
-:root{
-  --nuit:#0d1322; --panneau:#151c31; --trait:#2a3352; --or:#c9a35c; --or-doux:#e6cf9e;
-  --creme:#f3ece0; --gris:#9aa3bd; --bordeaux:#69393C; --vert:#5fcf96; --ambre:#f0b352;
-  --titre:"Cormorant Garamond",Georgia,serif; --texte:"DM Sans",system-ui,sans-serif;
-  color-scheme:dark;
-}
+/* Une scène 3D plein écran ; la fiche (équipe ou agent) flotte à droite, ou en tiroir bas sur téléphone. */
+:root{--nuit:#0d1322;--panneau:rgba(19,26,46,.94);--trait:#2c3558;--or:#c9a35c;--or-doux:#e9d3a3;--creme:#f3ece0;--gris:#9aa3bd;
+  --vert:#5fcf96;--ambre:#f0b352;--titre:"Cormorant Garamond",Georgia,serif;--texte:"DM Sans",system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--nuit);color:var(--creme);font:15px/1.45 var(--texte);
-  padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin-bottom:14px}
-h1{font:600 clamp(26px,4vw,38px)/1 var(--titre);margin:0;letter-spacing:.5px;color:var(--or-doux)}
-.sous{color:var(--gris);font-size:13px}
-.maj{margin-left:auto;color:var(--gris);font-size:12px;font-variant-numeric:tabular-nums}
-.grille{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
-@media(max-width:1000px){.grille{grid-template-columns:minmax(0,1fr)}}
-.defile{overflow-x:auto;border-radius:18px;border:1px solid var(--trait);background:#0a0f1c}
-.scene{position:relative;min-width:860px;aspect-ratio:1672/941;background:url(bureau.jpg) center/cover}
-.pole{position:absolute;border:0;padding:0;background:none;border-radius:22px;cursor:pointer;color:inherit;font:inherit;text-align:left}
-.pole:focus-visible{outline:2px solid var(--or);outline-offset:2px}
-.pole.choisi{box-shadow:0 0 0 2px var(--or) inset}
-.pole.vide{background:rgba(9,13,24,.62);backdrop-filter:grayscale(1)}
-.pole.vide::after{content:"À recruter";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  font:600 clamp(12px,1.5vw,20px) var(--titre);letter-spacing:3px;text-transform:uppercase;color:var(--or-doux);
-  border:1px dashed var(--or);padding:.35em .9em;border-radius:40px;background:rgba(13,19,34,.7);white-space:nowrap}
-.etat{position:absolute;left:4%;top:5%;display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:40px;
-  background:rgba(13,19,34,.86);border:1px solid var(--trait);font-size:clamp(10px,1vw,13px);font-weight:500;white-space:nowrap}
-.pt{width:8px;height:8px;border-radius:50%;background:var(--vert);flex:none}
-.travaille .pt{background:var(--ambre);animation:pouls 1s infinite}
-.travaille{animation:halo 1.6s infinite}
-.bulle{position:absolute;right:6%;top:22%;padding:8px 12px;border-radius:14px 14px 14px 3px;background:var(--creme);color:#1b2036;
-  font-size:clamp(10px,1vw,13px);font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:flotte 2.4s ease-in-out infinite}
-.bulle i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#1b2036;margin-left:3px;animation:pouls 1s infinite}
-.bulle i:nth-child(2){animation-delay:.2s}.bulle i:nth-child(3){animation-delay:.4s}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--nuit);color:var(--creme);font:14.5px/1.45 var(--texte)}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#gl.main{cursor:pointer}
+#hud{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.plaque{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;border:1px solid var(--or);background:rgba(17,24,48,.92);color:var(--or-doux);
+  font:600 13px var(--titre);letter-spacing:2.5px;text-transform:uppercase;padding:4px 14px;border-radius:30px;white-space:nowrap}
+.plaque.vide{border-style:dashed;color:var(--gris);border-color:var(--gris)}
+.nom{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:20px;background:rgba(13,19,34,.85);
+  font-size:12px;font-weight:700;white-space:nowrap}
+.nom i{width:7px;height:7px;border-radius:50%;background:var(--vert)}
+.nom.w i{background:var(--ambre);animation:pouls 1s infinite}
+.nom.p i{background:var(--gris)}
+.bulle{position:absolute;transform:translate(-50%,-100%);max-width:230px;padding:8px 12px;border-radius:14px 14px 14px 3px;background:var(--creme);color:#1b2036;
+  font-size:12.5px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:pop .25s ease-out}
+@keyframes pop{from{opacity:0;transform:translate(-50%,-85%) scale(.8)}}
 @keyframes pouls{50%{opacity:.25}}
-@keyframes halo{0%,100%{box-shadow:0 0 0 2px rgba(240,179,82,.9) inset,0 0 26px rgba(240,179,82,.35)}50%{box-shadow:0 0 0 2px rgba(240,179,82,.35) inset,0 0 8px rgba(240,179,82,.1)}}
-@keyframes flotte{50%{transform:translateY(-5px)}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important}}
-aside{display:grid;gap:14px}
-.carte{background:var(--panneau);border:1px solid var(--trait);border-radius:16px;padding:16px}
-.carte h2{font:600 21px/1.1 var(--titre);margin:0 0 10px;color:var(--or-doux);letter-spacing:.3px}
+header{position:fixed;left:max(16px,env(safe-area-inset-left,0px));top:max(12px,env(safe-area-inset-top,0px));pointer-events:none}
+h1{font:600 clamp(22px,3.4vw,34px)/1 var(--titre);margin:0;color:var(--or-doux);letter-spacing:.5px;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.sous{color:var(--gris);font-size:12px;margin-top:4px}
+#fiche{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:max(12px,env(safe-area-inset-top,0px));width:340px;max-height:calc(100% - 24px);overflow:auto;
+  background:var(--panneau);border:1px solid var(--trait);border-radius:18px;padding:16px;backdrop-filter:blur(8px)}
+@media(max-width:820px){#fiche{left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));top:auto;bottom:max(10px,env(safe-area-inset-bottom,0px));width:auto;max-height:44%}}
+#fiche h2{font:600 23px/1.1 var(--titre);margin:0 0 2px;color:var(--or-doux)}
+#fiche h3{font:700 11px var(--texte);letter-spacing:1.5px;text-transform:uppercase;color:var(--gris);margin:14px 0 6px}
+#fiche p{margin:0 0 8px;color:#d5d9e6}
+.role{color:var(--gris);font-size:12.5px;margin-bottom:10px}
+.retour{all:unset;cursor:pointer;color:var(--gris);font-size:12px;margin-bottom:8px;display:inline-block}
+.retour:focus-visible,.ligne:focus-visible,.btn:focus-visible{outline:2px solid var(--or);outline-offset:2px}
 .chiffres{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.chiffres div{background:var(--nuit);border-radius:12px;padding:10px 8px;text-align:center}
-.chiffres b{display:block;font:600 28px/1 var(--titre);color:var(--creme);font-variant-numeric:tabular-nums}
-.chiffres span{font-size:11px;color:var(--gris)}
-ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.fil li{display:flex;gap:10px;align-items:baseline;font-size:13.5px}
-.fil time{color:var(--gris);font-size:12px;flex:none;width:76px;font-variant-numeric:tabular-nums}
+.chiffres div{background:rgba(13,19,34,.8);border-radius:12px;padding:9px 6px;text-align:center}
+.chiffres b{display:block;font:600 26px/1 var(--titre);font-variant-numeric:tabular-nums}
+.chiffres span{font-size:10.5px;color:var(--gris)}
+.ligne{all:unset;display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border-radius:10px;cursor:pointer;box-sizing:border-box}
+.ligne:hover{background:rgba(255,255,255,.05)}
+.pastille{width:30px;height:30px;border-radius:50%;flex:none;border:2px solid var(--or)}
+.ligne b{display:block;font-size:13.5px}.ligne small{color:var(--gris);font-size:11.5px}
+.etat{margin-left:auto;font-size:11px;padding:2px 9px;border-radius:20px;border:1px solid var(--vert);color:var(--vert);white-space:nowrap}
+.etat.w{border-color:var(--ambre);color:var(--ambre)}.etat.p{border-color:var(--gris);color:var(--gris)}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.fil li{display:flex;gap:10px;font-size:13px}.fil time{color:var(--gris);font-size:11.5px;flex:none;width:74px;font-variant-numeric:tabular-nums}
 a{color:var(--or-doux)}
-.detail p{margin:0 0 8px;color:#d5d9e6;font-size:14px}
 .tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:30px;border:1px solid var(--trait);color:var(--gris);margin:0 4px 4px 0}
-.tag.ok{border-color:var(--vert);color:var(--vert)}
-.note{color:var(--gris);font-size:12px;margin-top:8px}
+.barres{display:grid;gap:5px}.barres div{display:grid;grid-template-columns:120px 1fr 22px;gap:8px;align-items:center;font-size:12px}
+.barres i{height:7px;border-radius:4px;background:var(--or);display:block}
+.btn{all:unset;cursor:pointer;font-size:12px;font-weight:700;border:1px solid var(--or);color:var(--or-doux);padding:6px 12px;border-radius:30px;margin-top:10px;display:inline-block}
+.note{color:var(--gris);font-size:11.5px;margin-top:8px}
+#aide{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));color:var(--gris);font-size:11.5px;pointer-events:none}
+@media(max-width:820px){#aide{display:none}}
+@media(prefers-reduced-motion:reduce){.bulle,.nom i{animation:none}}
 </style>
 </head>
 <body>
-<header>
-  <h1>Le Bureau des Agents IA</h1>
-  <span class="sous">Mi-Haven · French Business Club</span>
-  <span class="maj" id="maj">Connexion…</span>
-</header>
-<div class="grille">
-  <div class="defile"><div class="scene" id="scene"></div></div>
-  <aside>
-    <section class="carte">
-      <h2>Agent Reels · @mihaven.ma</h2>
-      <div class="chiffres">
-        <div><b id="n-jour">–</b><span>aujourd'hui</span></div>
-        <div><b id="n-total">–</b><span>au total</span></div>
-        <div><b id="n-next">–</b><span>prochain passage</span></div>
-      </div>
-      <p class="note" id="etat-reels">Lecture de l'état de l'agent…</p>
-    </section>
-    <section class="carte detail" id="detail"></section>
-    <section class="carte">
-      <h2>Derniers Reels publiés</h2>
-      <ul class="fil" id="fil"><li>Chargement…</li></ul>
-    </section>
-  </aside>
-</div>
+<canvas id="gl"></canvas>
+<div id="hud"></div>
+<header><h1>Le Bureau des Agents IA</h1><div class="sous" id="maj">Mi-Haven · French Business Club</div></header>
+<section id="fiche" aria-live="polite"></section>
+<div id="aide">Glisse pour te déplacer · molette ou pincement pour zoomer · clique sur un agent</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const REPO = 'julianaudproFBC/mihaven-reels';
-const HEURES_UTC = [0, 2, 5, 7, 10, 12, 14, 17, 19, 21];   // passages de l'agent Reels
-const FORMATS = { visite: 'Visite guidée', rapide: 'Coupes rapides', duel: 'Duel A ou B', carnet: 'Carnet de voyage', mosaique: '48 logements', vide: 'Appartement vide', details: 'Les détails', etapes: 'La méthode en 3 étapes' };
-// Les pôles : position sur l'image (en %), agents en service, ce qui reste à brancher.
-const POLES = [
-  { id: 'marketing', nom: 'Marketing', box: [1.2, 62.5, 35.5, 34], agents: ['Agent Reels : fabrique et publie 10 Reels par jour sur @mihaven.ma'], afaire: ['Statistiques Instagram', 'Meta Ads'], live: true,
-    texte: 'Le seul pôle suivi en direct pour l\'instant : quand l\'agent fabrique un Reel, le pôle s\'allume.' },
-  { id: 'mihaven', nom: 'Mi-Haven', box: [2.4, 3, 33.5, 33], agents: ['Réponse automatique GESTION : envoie le formulaire propriétaires', 'Réponse automatique SÉJOUR : répond aux voyageurs'], afaire: ['Back-office Mi-Haven', 'WhatsApp', 'E-mails'],
-    texte: 'Deux automatisations Meta répondent aux commentaires en message privé. Elles sont en service, mais leur activité n\'est pas encore mesurée ici.' },
-  { id: 'fbc', nom: 'FBC', box: [64, 3, 34, 33], agents: ['Réponse automatique INVITATION', 'Réponse automatique PITCH'], afaire: ['Back-office FBC', 'CRM du Sheet', 'Brevo (e-mails)'],
-    texte: 'Deux automatisations Meta sur @french.business.club. En service, activité pas encore mesurée ici.' },
-  { id: 'direction', nom: 'Direction', box: [33.5, 32, 30, 38.5], agents: ['Julian'], afaire: ['Résumé quotidien de tous les pôles'],
-    texte: 'Ton poste. À terme : un point du jour qui résume ce que chaque pôle a fait.' },
-  { id: 'support', nom: 'Support', box: [1.8, 38, 26.5, 23], vide: true, afaire: ['Agent qui répond aux commentaires et aux messages'], texte: 'Aucun agent pour l\'instant.' },
-  { id: 'finance', nom: 'Finance', box: [68.8, 38, 30, 23], vide: true, afaire: ['Suivi des revenus et des dépenses par logement'], texte: 'Aucun agent pour l\'instant.' },
-  { id: 'commercial', nom: 'Commercial', box: [61, 62.5, 38, 34], vide: true, afaire: ['Suivi des formulaires propriétaires reçus', 'Relances'], texte: 'Aucun agent pour l\'instant.' },
+(function () {
+'use strict';
+const REPO = 'julianaudproFBC/mihaven-reels', HEURES_UTC = [0, 2, 5, 7, 10, 12, 14, 17, 19, 21];
+const FORMATS = { visite: 'Visite guidée', rapide: 'Coupes rapides', duel: 'Duel A ou B', carnet: 'Carnet de voyage', mosaique: '48 logements', vide: 'Appartement vide', details: 'Les détails', etapes: 'Méthode en 3 étapes' };
+const $ = id => document.getElementById(id), esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+const C = { sol: 0xd6cbb8, moq: 0xc4b59e, mur: 0xe6dccb, noyer: 0x4a3a33, marine: 0x1c2748, creme: 0xf0e8da, or: 0xc9a35c, vert: 0x4f8f52, pot: 0xd8cfc0 };
+
+// ---------- scène
+const canvas = $('gl'), hud = $('hud');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 300), DIR = new THREE.Vector3(1, 1.05, 1).normalize();
+const BASE = () => innerWidth < 820 ? [5, 6] : [3, 1];
+const view = { x: BASE()[0], z: BASE()[1], zoom: 1, tx: BASE()[0], tz: BASE()[1], tzoom: 1, suit: null };
+const hemi = new THREE.HemisphereLight(0xfff4e0, 0x7a6f86, 0.62); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0d8, 0.85); sun.position.set(-18, 34, 12); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90 }); sun.shadow.bias = -0.0006; scene.add(sun);
+const M = (color, o) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.75 }, o || {}));
+const glow = color => new THREE.MeshBasicMaterial({ color });
+function box(w, h, d, mat, x, y, z, parent) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; (parent || scene).add(m); return m; }
+function cyl(rt, rb, h, mat, x, y, z, parent, seg) { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 20), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; (parent || scene).add(m); return m; }
+function sph(r, mat, x, y, z, parent) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat); m.position.set(x, y, z); m.castShadow = true; (parent || scene).add(m); return m; }
+const mats = { noyer: M(C.noyer, { roughness: .5 }), marine: M(C.marine), creme: M(C.creme), or: M(C.or, { metalness: .6, roughness: .35 }), mur: M(C.mur), vert: M(C.vert), pot: M(C.pot), marbre: M(0xf7f3ee, { roughness: .25 }), verre: new THREE.MeshStandardMaterial({ color: 0xbfd6e6, transparent: true, opacity: .22, roughness: .1 }), lueur: glow(0xffd58a) };
+
+// sol et socle
+box(37, .6, 25, M(0xcfc4b2), 0, -.31, 0).castShadow = false;
+box(36, .02, 24, M(C.sol, { roughness: .35 }), 0, 0, 0).castShadow = false;
+const ZONES = {
+  mihaven: { n: 'Mi-Haven', r: [-17, -11, -7.2, -4.6], porte: [-12, -3.75] }, cafe: { n: 'Cafétéria', r: [-4.8, -11, 4.8, -4.6], porte: [0, -3.75] }, fbc: { n: 'FBC', r: [7.2, -11, 17, -4.6], porte: [12, -3.75] },
+  support: { n: 'Support', r: [-17, -2.9, -7.2, 2.6], porte: [-6, 0], vide: 1 }, direction: { n: 'Direction', r: [-4.8, -2.9, 4.8, 2.6], porte: [0, 3.5] }, finance: { n: 'Finance', r: [7.2, -2.9, 17, 2.6], porte: [6, 0], vide: 1 },
+  marketing: { n: 'Marketing', r: [-17, 4.4, -7.2, 11], porte: [-12, 3.5] }, salon: { n: 'Salon', r: [-4.8, 4.4, 4.8, 11], porte: [0, 3.5] }, commercial: { n: 'Commercial', r: [7.2, 4.4, 17, 11], porte: [12, 3.5], vide: 1 },
+};
+function plante(x, z, s) { s = s || 1; cyl(.32 * s, .25 * s, .6 * s, mats.pot, x, .3 * s, z); sph(.55 * s, mats.vert, x, 1.05 * s, z); sph(.4 * s, mats.vert, x + .25 * s, 1.5 * s, z - .1); sph(.35 * s, mats.vert, x - .28 * s, 1.35 * s, z + .15); }
+for (const k in ZONES) { const z = ZONES[k], [x0, z0, x1, z1] = z.r, w = x1 - x0, d = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  z.c = [cx, cz]; box(w, .04, d, M(k === 'cafe' || k === 'salon' ? 0xcbbda6 : C.moq, { roughness: .9 }), cx, .02, cz).castShadow = false;
+  if (k !== 'salon' && k !== 'direction') { // muret du fond et côté extérieur, ruban lumineux au pied
+    box(w, 1.5, .25, mats.mur, cx, .75, z0 < -5 ? z0 + .12 : z0 + .12); box(w - .4, .06, .08, mats.lueur, cx, .1, z0 + .3);
+    const cote = x0 < -10 ? x0 + .12 : x1 > 10 ? x1 - .12 : null; if (cote !== null) box(.25, 1.5, d, mats.mur, cote, .75, cz);
+    box(w, 1.3, .08, mats.verre, cx, .7, z1 - .05).castShadow = false; }
+  plante(x0 + .8, z1 - .8, .9); if (w > 9) plante(x1 - .8, z0 + 1, 1.1); }
+// murets vitrés ronds de la direction
+for (let i = 0; i < 14; i++) { const a = Math.PI * (1.05 + i * .068); box(.9, 1.2, .07, mats.verre, Math.cos(a) * 4.5, .65, Math.sin(a) * 2.7).rotation.y = -a + Math.PI / 2; }
+
+// écrans : un canevas par écran, redessiné selon l'état
+function ecran(x, y, z, ry, w, h) { const cv = document.createElement('canvas'); cv.width = 256; cv.height = 150; const tx = new THREE.CanvasTexture(cv);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tx })); m.position.set(x, y, z); m.rotation.y = ry; scene.add(m); return { cv, tx, g: cv.getContext('2d') }; }
+function peintEcran(e, mode, p) { const g = e.g; g.fillStyle = '#141b3a'; g.fillRect(0, 0, 256, 150);
+  if (mode === 'rendu') { g.fillStyle = '#e9d3a3'; g.font = 'bold 22px sans-serif'; g.fillText('RENDU DU REEL', 18, 40); g.fillStyle = '#2c3558'; g.fillRect(18, 62, 220, 22); g.fillStyle = '#f0b352'; g.fillRect(18, 62, 220 * p, 22); g.fillStyle = '#fff'; g.font = 'bold 30px sans-serif'; g.fillText(Math.round(p * 100) + ' %', 18, 128); }
+  else if (mode === 'veille') { g.fillStyle = '#2c3558'; g.font = 'bold 20px sans-serif'; g.fillText('EN VEILLE', 70, 82); }
+  else { g.fillStyle = '#3f7dd8'; for (let i = 0; i < 5; i++) g.fillRect(18 + i * 28, 120 - (20 + ((i * 37 + p * 60) % 60)), 18, 20 + ((i * 37 + p * 60) % 60)); g.fillStyle = '#5fcf96'; g.fillRect(170, 30, 68, 8); g.fillStyle = '#9aa3bd'; g.fillRect(170, 48, 50, 6); g.fillRect(170, 62, 60, 6); }
+  e.tx.needsUpdate = true; }
+
+// postes de travail : f = direction regardée par l'agent assis
+const POSTES = {};
+function poste(id, x, z, f) { const fx = Math.sin(f), fz = Math.cos(f), g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = f; scene.add(g);
+  box(2.3, .1, 1.05, mats.noyer, 0, .95, .55, g); box(2.3, .9, .08, mats.noyer, 0, .45, 1.05, g); box(2.2, .03, .05, mats.lueur, 0, .12, 1.1, g);
+  box(.1, .3, .1, mats.marine, 0, 1.15, .75, g); box(1.2, .7, .06, mats.marine, 0, 1.6, .78, g);
+  cyl(.38, .38, .12, mats.creme, 0, .55, -.35, g); box(.75, .7, .1, mats.creme, 0, .95, -.72, g); cyl(.05, .05, .5, mats.or, 0, .27, -.35, g);
+  const e = ecran(x + fx * .74, 1.6, z + fz * .74, f + Math.PI, 1.1, .6); peintEcran(e, 'tableau', Math.random());
+  POSTES[id] = { x: x - fx * .35, z: z - fz * .35, f, ecran: e, assis: 1 }; }
+poste('ines', -14, -8.6, 0); poste('sami', -10.2, -8.6, 0); poste('lea', 10.2, -8.6, 0); poste('max', 14, -8.6, 0);
+poste('rea', -13.6, 6.6, 0); poste('mk2', -10, 6.6, 0);
+poste('s1', -14, -1.4, 0); poste('s2', -10.4, -1.4, 0); poste('f1', 10.4, -1.4, 0); poste('f2', 14, -1.4, 0); poste('c1', 10.4, 6.6, 0); poste('c2', 14, 6.6, 0);
+// direction : grand bureau et table ronde
+box(4.2, .12, 1.3, mats.noyer, 0, .98, -1.2); box(4.2, .95, .1, mats.noyer, 0, .47, -.6); box(4, .04, .06, mats.lueur, 0, .12, -.52);
+cyl(.45, .45, .14, mats.marine, 0, .55, -2.1); box(.9, .9, .12, mats.marine, 0, 1.05, -2.5);
+POSTES.julian = { x: 0, z: -2.0, f: 0, assis: 1, ecran: ecran(0, 1.45, -1.0, Math.PI, 1, .55) }; peintEcran(POSTES.julian.ecran, 'tableau', .4);
+cyl(1.3, 1.3, .1, mats.noyer, 0, .85, 1.3, null, 32); cyl(.2, .5, .8, mats.noyer, 0, .42, 1.3);
+// décor Mi-Haven (maquette de villa) et FBC (scène et grand écran)
+box(2.4, .5, 1.6, mats.noyer, -9.2, .25, -6); box(2.2, .06, 1.4, mats.vert, -9.2, .53, -6); box(.7, .45, .6, mats.creme, -9.5, .8, -6); box(.5, .35, .5, mats.creme, -8.7, .74, -5.8);
+cyl(1.5, 1.5, .2, mats.creme, 15, .1, -6.2, null, 32); box(3.6, 2, .15, mats.marine, 12, 1.9, -10.6); peintEcran(ecran(12, 1.9, -10.5, 0, 3.4, 1.8), 'tableau', .7);
+box(3.6, 2, .15, mats.marine, -12, 1.9, -10.6); peintEcran(ecran(-12, 1.9, -10.5, 0, 3.4, 1.8), 'tableau', .2);
+box(3.2, 1.8, .15, mats.marine, -11.8, 1.8, 4.7); peintEcran(ecran(-11.8, 1.8, 4.8, 0, 3, 1.6), 'tableau', .55);
+// cafétéria : bar, tabourets, machine à café, anneau lumineux
+box(5.2, 1.05, 1, mats.creme, 0, .52, -7.2); box(5.4, .1, 1.2, mats.marbre, 0, 1.1, -7.2); box(6.4, 2.2, .5, mats.noyer, 0, 1.1, -10.6); box(6.2, .05, .1, mats.lueur, 0, 1.5, -10.3);
+box(.8, .9, .6, M(0x2b2b30, { metalness: .5, roughness: .3 }), -1.8, 1.6, -10.2); box(.3, .08, .05, mats.lueur, -1.8, 1.75, -9.88);
+const anneau = new THREE.Mesh(new THREE.TorusGeometry(1.5, .06, 8, 48), mats.lueur); anneau.rotation.x = Math.PI / 2; anneau.position.set(0, 3.6, -7.2); scene.add(anneau);
+const SPOTS = [];
+[-1.8, -.6, .6, 1.8].forEach(x => { cyl(.3, .3, .1, mats.marine, x, .8, -6.1); cyl(.05, .05, .8, mats.or, x, .4, -6.1); SPOTS.push({ z: 'cafe', x, zz: -6.1, f: Math.PI, assis: 1, tasse: 1 }); });
+SPOTS.push({ z: 'cafe', x: -1.8, zz: -9.2, f: Math.PI, tasse: 1 }, { z: 'cafe', x: 3.4, zz: -8.6, f: -Math.PI / 2, tasse: 1 }, { z: 'cafe', x: -3.6, zz: -6.4, f: Math.PI / 2, tasse: 1 });
+// salon : canapés, table basse
+function canape(x, z, ry, mat) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); box(2.8, .5, 1, mat, 0, .35, 0, g); box(2.8, .7, .3, mat, 0, .75, -.45, g); box(.3, .6, 1, mat, -1.35, .65, 0, g); box(.3, .6, 1, mat, 1.35, .65, 0, g); }
+canape(0, 9.8, Math.PI, mats.creme); canape(-2.9, 7.6, Math.PI / 2, mats.marine); canape(2.9, 7.6, -Math.PI / 2, mats.marine); cyl(.9, .9, .35, mats.marbre, 0, .2, 7.6, null, 28);
+SPOTS.push({ z: 'salon', x: -.7, zz: 9.3, f: Math.PI, assis: 1 }, { z: 'salon', x: .7, zz: 9.3, f: Math.PI, assis: 1 }, { z: 'salon', x: -2.5, zz: 7.6, f: Math.PI / 2, assis: 1 }, { z: 'salon', x: 2.5, zz: 7.6, f: -Math.PI / 2, assis: 1 });
+
+// ---------- agents
+const TEAM = [
+  { id: 'rea', nom: 'Réa', role: 'Monteuse Reels · Marketing', zone: 'marketing', peau: 0xe9b995, cheveux: 0xb5562c, coiffe: 'boucles', haut: 0xf0e8da, bas: 0x1c2748, type: 'reels',
+    trait: 'Perfectionniste et infatigable. Elle fabrique un Reel toutes les deux heures environ, jour et nuit, et file à son poste dès qu\'un passage commence.', boisson: 'Thé à la menthe',
+    dit: { travail: ['Rendu en cours…', 'Encore un Reel pour @mihaven.ma', 'Je choisis les photos.'], pause: ['Petit thé avant le prochain Reel.', 'Prochain passage, je suis prête.', 'Vous avez vu ma dernière visite ?'] } },
+  { id: 'ines', nom: 'Inès', role: 'Accueil propriétaires · Mi-Haven', zone: 'mihaven', peau: 0xd9a57e, cheveux: 0x2a1c18, coiffe: 'chignon', haut: 0xf0e8da, bas: 0x23201f, type: 'auto', mot: 'GESTION',
+    trait: 'Calme et précise. Dès qu\'un propriétaire commente GESTION, elle lui envoie le formulaire en message privé.', boisson: 'Café noir',
+    dit: { travail: ['Je surveille les commentaires.', 'GESTION ? Je m\'en occupe.'], pause: ['Deux minutes de pause.', 'Un café et j\'y retourne.'] } },
+  { id: 'sami', nom: 'Sami', role: 'Accueil voyageurs · Mi-Haven', zone: 'mihaven', peau: 0xc98f66, cheveux: 0x1d1512, coiffe: 'court', barbe: 1, haut: 0xe8dcc6, bas: 0x23201f, type: 'auto', mot: 'SÉJOUR',
+    trait: 'Chaleureux, toujours partant. Il répond aux voyageurs qui commentent SÉJOUR et leur demande leurs dates.', boisson: 'Jus d\'orange',
+    dit: { travail: ['SÉJOUR ? J\'arrive.', 'Je garde un œil sur les Reels.'], pause: ['On est bien ici.', 'Qui veut un jus ?'] } },
+  { id: 'lea', nom: 'Léa', role: 'Invitations · FBC', zone: 'fbc', peau: 0xf0c8a6, cheveux: 0x5a3a22, coiffe: 'long', haut: 0x1c2748, bas: 0x1c2748, type: 'auto', mot: 'INVITATION',
+    trait: 'Élégante et organisée. Elle envoie l\'invitation du club à ceux qui commentent INVITATION.', boisson: 'Cappuccino',
+    dit: { travail: ['Une invitation part.', 'Le club s\'agrandit.'], pause: ['Pause cappuccino.', 'Bientôt le prochain afterwork.'] } },
+  { id: 'max', nom: 'Max', role: 'Pitch · FBC', zone: 'fbc', peau: 0x8d5a3b, cheveux: 0x15100e, coiffe: 'boucles', haut: 0x1c2748, bas: 0x1c2748, type: 'auto', mot: 'PITCH',
+    trait: 'Énergique, il adore la scène. Il envoie le lien du pitch à ceux qui commentent PITCH.', boisson: 'Espresso',
+    dit: { travail: ['PITCH ? Voilà le lien.', 'Je prépare la scène.'], pause: ['Un espresso, vite.', 'Qui pitche ce mois-ci ?'] } },
+  { id: 'julian', nom: 'Julian', role: 'Direction', zone: 'direction', peau: 0xd9a57e, cheveux: 0x241815, coiffe: 'court', barbe: 1, haut: 0x1c2748, bas: 0x1c2748, type: 'chef',
+    trait: 'C\'est toi. Tu passes voir les pôles, puis tu retournes à ton bureau.', boisson: 'Café',
+    dit: { travail: ['On avance bien.', 'Je regarde les chiffres.'], pause: ['Je fais le tour des équipes.', 'Beau travail, tout le monde.'] } },
 ];
-const $ = id => document.getElementById(id);
-const scene = $('scene'); let choisi = 'marketing', travaille = false;
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-function dessine() {
-  scene.innerHTML = '';
-  for (const p of POLES) {
-    const b = document.createElement('button'); b.type = 'button';
-    const actif = p.live && travaille;
-    b.className = 'pole' + (p.vide ? ' vide' : '') + (p.id === choisi ? ' choisi' : '') + (actif ? ' travaille' : '');
-    Object.assign(b.style, { left: p.box[0] + '%', top: p.box[1] + '%', width: p.box[2] + '%', height: p.box[3] + '%' });
-    b.setAttribute('aria-label', 'Pôle ' + p.nom);
-    if (!p.vide) b.innerHTML = `<span class="etat"><span class="pt"></span>${actif ? 'Au travail' : p.live ? 'En veille' : p.id === 'direction' ? 'Toi' : 'En service'}</span>` + (actif ? '<span class="bulle">Je fabrique un Reel<i></i><i></i><i></i></span>' : '');
-    b.onclick = () => { choisi = p.id; dessine(); };
-    scene.appendChild(b);
-  }
-  const p = POLES.find(x => x.id === choisi);
-  $('detail').innerHTML = `<h2>Pôle ${esc(p.nom)}</h2><p>${esc(p.texte)}</p>` +
-    (p.agents || []).map(a => `<span class="tag ok">${esc(a)}</span>`).join('') +
-    (p.afaire || []).map(a => `<span class="tag">À brancher : ${esc(a)}</span>`).join('');
-}
-const hm = d => d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Casablanca' });
-const jour = d => d.toLocaleDateString('fr-CA', { timeZone: 'Africa/Casablanca' });
-function prochain() {
-  const n = new Date(); let best = null;
-  for (let j = 0; j < 2 && !best; j++) for (const h of HEURES_UTC) { const t = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + j, h, 0)); if (t > n) { best = t; break; } }
-  const m = Math.round((best - n) / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`;
-}
-async function lis(url) { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.json(); }
+function perso(a) { const g = new THREE.Group(), peau = M(a.peau, { roughness: .6 }), ch = M(a.cheveux, { roughness: .9 }), haut = M(a.haut), bas = M(a.bas);
+  const corps = new THREE.Group(); g.add(corps);
+  cyl(.3, .38, .72, haut, 0, .88, 0, corps); sph(.5, peau, 0, 1.68, 0, corps);
+  const calotte = new THREE.Mesh(new THREE.SphereGeometry(.535, 24, 14, 0, Math.PI * 2, 0, Math.PI * .5), ch); calotte.position.set(0, 1.72, -.03); calotte.rotation.x = -.25; calotte.castShadow = true; corps.add(calotte);
+  if (a.coiffe === 'boucles') [[-.4, 1.85, 0], [.4, 1.85, 0], [0, 2.12, -.1], [-.25, 2.05, .2], [.25, 2.05, .2], [0, 1.75, -.45], [-.35, 1.6, -.3], [.35, 1.6, -.3]].forEach(p => sph(.24, ch, p[0], p[1], p[2], corps));
+  if (a.coiffe === 'chignon') sph(.24, ch, 0, 2.28, -.12, corps);
+  if (a.coiffe === 'long') { const l = cyl(.5, .42, .8, ch, 0, 1.35, -.2, corps); l.scale.z = .55; }
+  if (a.barbe) { const b = new THREE.Mesh(new THREE.SphereGeometry(.515, 24, 10, 0, Math.PI * 2, Math.PI * .58, Math.PI * .3), ch); b.position.set(0, 1.68, .01); corps.add(b); }
+  const noir = glow(0x1a1210); sph(.065, noir, -.17, 1.68, .45, corps); sph(.065, noir, .17, 1.68, .45, corps);
+  const bras = [-1, 1].map(s => { const p = new THREE.Group(); p.position.set(s * .4, 1.18, 0); corps.add(p); cyl(.09, .08, .5, haut, 0, -.25, 0, p); sph(.1, peau, 0, -.54, 0, p); return p; });
+  const jambes = [-1, 1].map(s => { const p = new THREE.Group(); p.position.set(s * .16, .52, 0); g.add(p); cyl(.13, .12, .46, bas, 0, -.23, 0, p); box(.2, .12, .34, M(0x1a1512), 0, -.48, .06, p); return p; });
+  const tasse = cyl(.09, .07, .16, mats.marbre, 0, -.6, .1, bras[1]); tasse.visible = false;
+  const halo = new THREE.Mesh(new THREE.RingGeometry(.7, .85, 40), glow(C.or)); halo.rotation.x = -Math.PI / 2; halo.position.y = .06; halo.visible = false; g.add(halo);
+  g.traverse(o => { o.userData.agent = a; }); scene.add(g);
+  Object.assign(a, { g, corps, bras, jambes, tasse, halo, etat: 'poste', chemin: [], t: rnd(5, 40), ph: Math.random() * 9, lieu: a.zone, spot: null, vitesse: 2.2 });
+  const p = POSTES[a.id]; g.position.set(p.x, 0, p.z); g.rotation.y = p.f; a.assis = 1; }
+TEAM.forEach(perso);
+
+// ---------- déplacements : couloirs en graphe, parcours en largeur
+const NOEUDS = [], idx = {};
+function noeud(x, z) { const k = x + ',' + z; if (!(k in idx)) { idx[k] = NOEUDS.length; NOEUDS.push({ x, z, v: [] }); } return idx[k]; }
+[[-3.75, 'z', [-12, -6, 0, 6, 12]], [3.5, 'z', [-12, -6, 0, 6, 12]], [-6, 'x', [-3.75, 0, 3.5]], [6, 'x', [-3.75, 0, 3.5]]].forEach(l => { const ids = l[2].map(v => l[1] === 'z' ? noeud(v, l[0]) : noeud(l[0], v)); for (let i = 1; i < ids.length; i++) { NOEUDS[ids[i]].v.push(ids[i - 1]); NOEUDS[ids[i - 1]].v.push(ids[i]); } });
+function trajet(za, zb) { const a = noeud.apply(null, ZONES[za].porte), b = noeud.apply(null, ZONES[zb].porte), prev = { [a]: -1 }, q = [a];
+  while (q.length) { const n = q.shift(); if (n === b) break; for (const v of NOEUDS[n].v) if (!(v in prev)) { prev[v] = n; q.push(v); } }
+  const out = []; for (let n = b; n !== -1; n = prev[n]) out.unshift([NOEUDS[n].x, NOEUDS[n].z]); return out; }
+function va(a, cible, zone, opts) { opts = opts || {}; if (a.spot) { a.spot.pris = 0; a.spot = null; }
+  a.chemin = trajet(a.lieu, zone).concat([[cible.x, cible.zz !== undefined ? cible.zz : cible.z]]); a.arrivee = cible; a.lieu = zone; a.etat = 'marche'; a.assis = 0; a.tasse.visible = false; a.vitesse = opts.vite ? 4.6 : 2.2; a.apres = opts.apres || 'pause'; }
+function auPoste(a, vite) { const p = POSTES[a.id]; va(a, { x: p.x, z: p.z, f: p.f, assis: 1 }, a.zone, { vite, apres: 'poste' }); }
+function enPause(a) { const libres = SPOTS.filter(s => !s.pris); if (!libres.length) return; const s = pick(libres); va(a, s, s.z); s.pris = 1; a.spot = s; }
+function visite(a) { const autre = pick(TEAM.filter(x => x !== a && x.etat === 'poste')); if (!autre) return enPause(a); const p = POSTES[autre.id]; va(a, { x: p.x + 1.5, z: p.z - .2, f: -Math.PI / 2 }, autre.zone); }
+
+// ---------- données en direct
+const data = { tout: [], jour: 0, travail: false, demo: 0, run: null, ok: false };
+const hm = d => d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Casablanca' }), jour = d => d.toLocaleDateString('fr-CA', { timeZone: 'Africa/Casablanca' });
+function prochain() { const n = new Date(); for (let j = 0; j < 2; j++) for (const h of HEURES_UTC) { const t = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + j, h, 0)); if (t > n) { const m = Math.round((t - n) / 60000); return m >= 60 ? Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') : m + ' min'; } } }
+async function lis(u) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.json(); }
 async function maj() {
-  try {
-    const t = Date.now(), raw = `https://raw.githubusercontent.com/${REPO}/main/`;
-    const [hist, pub] = await Promise.all([lis(raw + 'history.json?t=' + t), lis(raw + 'published.json?t=' + t)]);
-    const tout = [...pub.map(x => ({ ...x, format: 'Reel de lancement' })), ...hist.map(x => ({ ...x, format: FORMATS[x.format] || x.format }))].sort((a, b) => new Date(b.at) - new Date(a.at));
-    const auj = jour(new Date());
-    $('n-total').textContent = tout.length; $('n-jour').textContent = tout.filter(x => jour(new Date(x.at)) === auj).length; $('n-next').textContent = prochain();
-    $('fil').innerHTML = tout.slice(0, 8).map(x => { const d = new Date(x.at); return `<li><time>${jour(d) === auj ? hm(d) : d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Africa/Casablanca' }) + ' ' + hm(d)}</time><a href="${esc(x.permalink)}" target="_blank" rel="noopener">${esc(x.format)}</a></li>`; }).join('') || '<li>Aucun Reel publié pour l\'instant.</li>';
-    $('maj').textContent = 'Mis à jour à ' + hm(new Date());
+  try { const raw = 'https://raw.githubusercontent.com/' + REPO + '/main/', t = Date.now(), [h, p] = await Promise.all([lis(raw + 'history.json?t=' + t), lis(raw + 'published.json?t=' + t)]);
+    const tout = p.map(x => Object.assign({}, x, { nomFormat: 'Reel de lancement' })).concat(h.map(x => Object.assign({}, x, { nomFormat: FORMATS[x.format] || x.format }))).sort((a, b) => new Date(b.at) - new Date(a.at));
+    if (data.ok && tout.length > data.tout.length) fete();
+    data.tout = tout; data.jour = tout.filter(x => jour(new Date(x.at)) === jour(new Date())).length; data.ok = true; $('maj').textContent = 'En direct · mis à jour à ' + hm(new Date());
   } catch (e) { $('maj').textContent = 'Données indisponibles, nouvel essai dans 1 min'; }
-  try {
-    const r = await lis(`https://api.github.com/repos/${REPO}/actions/workflows/post.yml/runs?per_page=1`);
-    const run = r.workflow_runs && r.workflow_runs[0]; const avant = travaille;
-    travaille = !!run && run.status !== 'completed';
-    $('etat-reels').textContent = travaille ? 'L\'agent fabrique un Reel en ce moment.' : run && run.conclusion !== 'success' ? 'Le dernier passage a échoué : l\'agent réessaie au prochain créneau.' : 'En veille. Le dernier passage s\'est bien terminé.';
-    if (avant !== travaille) dessine();
-  } catch (e) { $('etat-reels').textContent = 'État en direct indisponible pour le moment.'; }
-}
-dessine(); maj(); setInterval(maj, 75000); setInterval(() => { $('n-next').textContent = prochain(); }, 30000);
+  try { const r = await lis('https://api.github.com/repos/' + REPO + '/actions/workflows/post.yml/runs?per_page=1'); data.run = r.workflow_runs && r.workflow_runs[0]; data.travail = !!data.run && data.run.status !== 'completed'; } catch (e) {}
+  fiche(); }
+const auTravail = () => data.travail || performance.now() < data.demo;
+
+// ---------- fiche (équipe ou agent)
+let choisi = null;
+const etatDe = a => a.type === 'reels' ? (auTravail() ? ['w', 'Fabrique un Reel'] : a.etat === 'poste' ? ['', 'À son poste'] : ['p', 'En pause']) : a.etat === 'poste' ? ['', a.type === 'chef' ? 'À son bureau' : 'En service'] : a.etat === 'marche' ? ['p', 'En chemin'] : ['p', a.lieu === a.zone ? 'À son poste' : 'En pause'];
+const hex = n => '#' + n.toString(16).padStart(6, '0');
+function fiche() { const f = $('fiche'), R = data;
+  if (!choisi) { f.innerHTML = '<h2>L\'équipe</h2><div class="role">6 au bureau · 3 pôles à recruter</div><div class="chiffres"><div><b>' + (R.ok ? R.jour : '–') + '</b><span>Reels aujourd\'hui</span></div><div><b>' + (R.ok ? R.tout.length : '–') + '</b><span>au total</span></div><div><b>' + prochain() + '</b><span>prochain passage</span></div></div><h3>Agents</h3>' +
+      TEAM.map(a => { const e = etatDe(a); return '<button class="ligne" data-a="' + a.id + '"><span class="pastille" style="background:' + hex(a.peau) + '"></span><span><b>' + esc(a.nom) + '</b><small>' + esc(a.role) + '</small></span><span class="etat ' + e[0] + '">' + e[1] + '</span></button>'; }).join('') +
+      '<h3>À recruter</h3><span class="tag">Support</span><span class="tag">Finance</span><span class="tag">Commercial</span><br><button class="btn" id="demo">Voir une démo de Réa au travail</button><p class="note">La démo dure 25 secondes et ne publie rien. Le reste est en direct.</p>';
+    f.querySelectorAll('[data-a]').forEach(b => b.onclick = () => choisir(TEAM.find(a => a.id === b.dataset.a))); $('demo').onclick = () => { data.demo = performance.now() + 25000; choisir(TEAM[0]); }; return; }
+  const a = choisi, e = etatDe(a); let h = '<button class="retour" id="retour">← Toute l\'équipe</button><h2>' + esc(a.nom) + '</h2><div class="role">' + esc(a.role) + ' · <span class="etat ' + e[0] + '" style="margin:0">' + e[1] + '</span></div><p>' + esc(a.trait) + '</p><span class="tag">Boisson : ' + esc(a.boisson) + '</span>';
+  if (a.type === 'reels') { const compte = {}; R.tout.slice(0, 20).forEach(x => compte[x.nomFormat] = (compte[x.nomFormat] || 0) + 1); const max = Math.max(1, ...Object.values(compte));
+    h += '<h3>Son travail en direct</h3><div class="chiffres"><div><b>' + R.jour + '</b><span>aujourd\'hui</span></div><div><b>' + R.tout.length + '</b><span>au total</span></div><div><b>' + prochain() + '</b><span>prochain passage</span></div></div>' +
+      (performance.now() < R.demo ? '<p class="note">Démo en cours : rien n\'est publié.</p>' : R.travail ? '<p class="note">Un Reel est en fabrication en ce moment.</p>' : '') +
+      '<h3>Derniers Reels publiés</h3><ul class="fil">' + R.tout.slice(0, 6).map(x => { const d = new Date(x.at); return '<li><time>' + (jour(d) === jour(new Date()) ? hm(d) : d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Africa/Casablanca' }) + ' ' + hm(d)) + '</time><a href="' + esc(x.permalink) + '" target="_blank" rel="noopener">' + esc(x.nomFormat) + '</a></li>'; }).join('') + '</ul>' +
+      '<h3>Formats des 20 derniers</h3><div class="barres">' + Object.entries(compte).sort((x, y) => y[1] - x[1]).map(([k, v]) => '<div><span>' + esc(k) + '</span><i style="width:' + (v / max * 100) + '%"></i><span>' + v + '</span></div>').join('') + '</div>' +
+      (R.run ? '<a class="btn" href="' + esc(R.run.html_url) + '" target="_blank" rel="noopener">Ouvrir le journal du dernier passage</a>' : ''); }
+  else if (a.type === 'auto') h += '<h3>Son travail</h3><p>Mot-clé surveillé : <b>' + a.mot + '</b>. Quand quelqu\'un le commente sous une publication, ' + esc(a.nom) + ' répond en message privé.</p><p class="note">L\'automatisation est en service, mais son activité n\'est pas encore mesurée ici. Ses pauses café sont décoratives.</p><span class="tag">À brancher : nombre de commentaires traités</span>';
+  else h += '<h3>Le point du jour</h3><p>' + R.jour + ' Reels publiés aujourd\'hui, ' + R.tout.length + ' depuis le lancement. 5 agents en service, 3 pôles à recruter.</p><span class="tag">À brancher : résumé quotidien de tous les pôles</span>';
+  f.innerHTML = h; $('retour').onclick = () => choisir(null); }
+function choisir(a) { if (choisi) choisi.halo.visible = false; choisi = a; view.suit = a; if (a) { a.halo.visible = true; view.tzoom = 2.1; } else { view.tzoom = 1; view.tx = BASE()[0]; view.tz = BASE()[1]; } fiche(); }
+
+// ---------- étiquettes, bulles, confettis
+const plaques = Object.keys(ZONES).map(k => { const d = document.createElement('div'); d.className = 'plaque' + (ZONES[k].vide ? ' vide' : ''); d.textContent = ZONES[k].n + (ZONES[k].vide ? ' · à recruter' : ''); hud.appendChild(d);
+  d.onclick = () => { choisir(null); view.tx = ZONES[k].c[0]; view.tz = ZONES[k].c[1]; view.tzoom = 1.9; }; return { d, p: new THREE.Vector3(ZONES[k].c[0], .1, ZONES[k].r[3] - .5) }; });
+TEAM.forEach(a => { a.tag = document.createElement('div'); a.tag.className = 'nom'; a.tag.innerHTML = '<i></i>' + esc(a.nom); hud.appendChild(a.tag); });
+let bulle = null;
+function parle(a, txt, ms) { if (bulle) bulle.d.remove(); const d = document.createElement('div'); d.className = 'bulle'; d.textContent = txt; hud.appendChild(d); bulle = { d, a, fin: performance.now() + (ms || 3800) }; }
+const confettis = [];
+function fete() { const a = TEAM[0]; parle(a, 'Publié sur @mihaven.ma !', 5000); for (let i = 0; i < 70; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.16, .1), new THREE.MeshBasicMaterial({ color: pick([C.or, 0xffffff, 0x69393c, 0x3f7dd8]), side: THREE.DoubleSide })); m.position.set(a.g.position.x + rnd(-1, 1), 3, a.g.position.z + rnd(-1, 1)); m.userData = { vx: rnd(-2, 2), vy: rnd(3, 7), vz: rnd(-2, 2), r: rnd(-6, 6) }; scene.add(m); confettis.push(m); } }
+function proj(v, el, dy) { const p = v.clone().project(cam); el.style.left = ((p.x + 1) / 2 * innerWidth) + 'px'; el.style.top = ((1 - p.y) / 2 * innerHeight + (dy || 0)) + 'px'; }
+
+// ---------- caméra et pointeur
+function cadre() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); const haut = (w < 820 ? 52 : 30) / view.zoom, larg = haut * w / h; cam.left = -larg / 2; cam.right = larg / 2; cam.top = haut / 2; cam.bottom = -haut / 2; cam.updateProjectionMatrix(); }
+addEventListener('resize', cadre);
+const ray = new THREE.Raycaster(), souris = new THREE.Vector2(); let glisse = null, pts = {};
+function vise(e) { souris.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(souris, cam); const h = ray.intersectObjects(TEAM.map(a => a.g), true)[0]; return h ? h.object.userData.agent : null; }
+canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); pts[e.pointerId] = [e.clientX, e.clientY]; glisse = { x: e.clientX, y: e.clientY, d: 0, pin: 0 }; });
+canvas.addEventListener('pointermove', e => { if (!glisse) { canvas.classList.toggle('main', !!vise(e)); return; } const ids = Object.keys(pts);
+  if (ids.length === 2) { pts[e.pointerId] = [e.clientX, e.clientY]; const a = pts[ids[0]], b = pts[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (glisse.pin) view.tzoom = Math.max(.7, Math.min(3.5, view.tzoom * d / glisse.pin)); glisse.pin = d; glisse.d = 99; return; }
+  const dx = e.clientX - glisse.x, dy = e.clientY - glisse.y; glisse.d += Math.abs(dx) + Math.abs(dy); glisse.x = e.clientX; glisse.y = e.clientY; pts[e.pointerId] = [e.clientX, e.clientY];
+  if (glisse.d > 6) { view.suit = null; const k = (cam.top - cam.bottom) / innerHeight, s = Math.SQRT1_2; view.tx += (-dx * s - dy * s * 1.45) * k; view.tz += (dx * s - dy * s * 1.45) * k; view.tx = Math.max(-20, Math.min(20, view.tx)); view.tz = Math.max(-14, Math.min(14, view.tz)); } });
+function fin(e) { delete pts[e.pointerId]; if (glisse && glisse.d <= 6) { const a = vise(e); if (a) choisir(a); } if (!Object.keys(pts).length) glisse = null; else glisse.pin = 0; }
+canvas.addEventListener('pointerup', fin); canvas.addEventListener('pointercancel', fin);
+canvas.addEventListener('wheel', e => { e.preventDefault(); view.tzoom = Math.max(.7, Math.min(3.5, view.tzoom * (e.deltaY < 0 ? 1.12 : .89))); }, { passive: false });
+
+// ---------- boucle
+let avant = performance.now(), tBulle = 4, tEcran = 0, tHeure = 0;
+function lumiere() { const h = +new Date().toLocaleTimeString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Africa/Casablanca' }), nuit = h < 7 || h >= 19;
+  scene.background = new THREE.Color(nuit ? 0x0a0f1e : 0x1a2340); hemi.intensity = nuit ? .42 : .62; sun.intensity = nuit ? .3 : .7; sun.color.set(nuit ? 0x9fb4ff : 0xfff0d8); }
+function tick(now) { const dt = Math.min(.05, (now - avant) / 1000); avant = now; const T = now / 1000, W = auTravail();
+  for (const a of TEAM) { a.t -= dt;
+    // décisions
+    if (a.type === 'reels') { if (W && a.etat !== 'marche' && !(a.etat === 'poste')) auPoste(a, true); else if (W && a.etat === 'marche' && a.apres !== 'poste') auPoste(a, true); else if (!W && a.etat === 'poste' && a.t < 0) { enPause(a); a.t = rnd(25, 50); } else if (!W && a.etat === 'pause' && a.t < 0) { enPause(a); a.t = rnd(25, 50); } }
+    else if (a.etat === 'poste' && a.t < 0) { a.type === 'chef' && Math.random() < .6 ? visite(a) : enPause(a); a.t = rnd(14, 24); }
+    else if (a.etat === 'pause' && a.t < 0) { auPoste(a); a.t = rnd(45, 110); }
+    // mouvement
+    if (a.etat === 'marche') { const c = a.chemin[0], dx = c[0] - a.g.position.x, dz = c[1] - a.g.position.z, d = Math.hypot(dx, dz), pas = a.vitesse * dt;
+      if (d <= pas) { a.g.position.x = c[0]; a.g.position.z = c[1]; a.chemin.shift(); if (!a.chemin.length) { a.etat = a.apres; a.assis = !!a.arrivee.assis; a.g.rotation.y = a.arrivee.f || 0; a.tasse.visible = !!a.arrivee.tasse; } }
+      else { a.g.position.x += dx / d * pas; a.g.position.z += dz / d * pas; let r = Math.atan2(dx, dz) - a.g.rotation.y; r = Math.atan2(Math.sin(r), Math.cos(r)); a.g.rotation.y += r * Math.min(1, dt * 10); } }
+    // pose
+    const m = a.etat === 'marche', w = Math.sin((T + a.ph) * (a.vitesse > 3 ? 14 : 9)), tape = a.etat === 'poste' && (a.type !== 'reels' || W);
+    a.jambes[0].rotation.x = m ? w * .7 : a.assis ? -1.45 : 0; a.jambes[1].rotation.x = m ? -w * .7 : a.assis ? -1.45 : 0;
+    a.bras[0].rotation.x = m ? -w * .6 : tape ? -1.1 + Math.sin(T * 13 + a.ph) * .12 : 0; a.bras[1].rotation.x = m ? w * .6 : tape ? -1.1 + Math.cos(T * 11 + a.ph) * .12 : a.tasse.visible ? -1.0 - Math.max(0, Math.sin(T * .7 + a.ph)) * .7 : 0;
+    a.corps.position.y = (a.assis ? -.12 : 0) + (m ? Math.abs(w) * .07 : Math.sin(T * 2 + a.ph) * .012); a.jambes.forEach(j => j.position.y = a.assis ? .62 : .52);
+    const e = etatDe(a); a.tag.className = 'nom ' + e[0]; proj(a.g.position.clone().setY(2.75), a.tag); }
+  // écrans, bulles, confettis
+  tEcran -= dt; if (tEcran < 0) { tEcran = .35; const r = POSTES.rea.ecran; W && TEAM[0].etat === 'poste' ? peintEcran(r, 'rendu', (T % 24) / 24) : peintEcran(r, TEAM[0].etat === 'poste' ? 'tableau' : 'veille', T % 1); }
+  tBulle -= dt; if (tBulle < 0) { tBulle = rnd(6, 11); const a = pick(TEAM.filter(x => x.etat !== 'marche')); if (a) parle(a, pick(a.etat === 'poste' && (a.type !== 'reels' || W) ? a.dit.travail : a.dit.pause)); }
+  if (bulle) { if (now > bulle.fin) { bulle.d.remove(); bulle = null; } else proj(bulle.a.g.position.clone().setY(3.1), bulle.d, -18); }
+  for (let i = confettis.length - 1; i >= 0; i--) { const c = confettis[i], u = c.userData; u.vy -= 9 * dt; c.position.x += u.vx * dt; c.position.y += u.vy * dt; c.position.z += u.vz * dt; c.rotation.x += u.r * dt; c.rotation.z += u.r * dt; if (c.position.y < 0) { scene.remove(c); confettis.splice(i, 1); } }
+  tHeure -= dt; if (tHeure < 0) { tHeure = 60; lumiere(); if (!choisi) fiche(); }
+  anneau.rotation.z = T * .15;
+  // caméra
+  if (view.suit) { view.tx = view.suit.g.position.x; view.tz = view.suit.g.position.z; }
+  const k = Math.min(1, dt * 4); view.x += (view.tx - view.x) * k; view.z += (view.tz - view.z) * k; if (Math.abs(view.tzoom - view.zoom) > .001) { view.zoom += (view.tzoom - view.zoom) * k; cadre(); }
+  cam.position.set(view.x + DIR.x * 80, DIR.y * 80, view.z + DIR.z * 80); cam.lookAt(view.x, 0, view.z);
+  plaques.forEach(p => proj(p.p, p.d));
+  renderer.render(scene, cam); requestAnimationFrame(tick); }
+cadre(); lumiere(); fiche(); maj(); setInterval(maj, 75000); setInterval(() => { if (choisi) fiche(); }, 5000); requestAnimationFrame(tick);
+})();
 </script>
 </body>
 </html>
