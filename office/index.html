@@ -436,7 +436,7 @@ $('mode').textContent = PRIVE ? 'Mode privé : tes agents agissent avec tes outi
 // ================= jeu : contrôle de Julian, réunions, niveaux, quêtes
 const ctrl = { on: false, pov: false, lacet: Math.PI, tangage: -.05, k: {} }, camPov = new THREE.PerspectiveCamera(72, 1, .1, 400);
 const camActif = () => ctrl.pov ? camPov : cam;
-let reunion = null, journal = [], notes = [];
+let reunion = null, journal = [], notes = [], skills = [];
 function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; $('toasts').appendChild(d); setTimeout(() => d.remove(), 3600); }
 // quêtes du jour, gardées sur cet appareil
 const cleQ = () => 'bureau.quetes.' + jour(new Date());
@@ -463,11 +463,13 @@ function tableau(a) { let h = ''; const o = ORDRES[a.id];
   const j = journal.filter(x => x.agent === a.id).slice(0, 5);
   if (j.length) h += '<h3>Ses derniers travaux</h3><ul class="jr">' + j.map(x => '<li><time>' + new Date(x.quand).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '</time><b>' + esc(x.ordre || '') + '</b><br>' + esc((x.reponse || '').slice(0, 180)) + '</li>').join('') + '</ul>';
   else if (PRIVE && a.type !== 'chef') h += '<h3>Ses derniers travaux</h3><p class="note">Rien pour l’instant. Donne-lui un ordre.</p>';
+  const sk = skills.filter(k => k.agents.includes('tous') || k.agents.includes(a.id));
+  if (sk.length) h += '<h3>Ses skills</h3><ul class="jr">' + sk.map(k => '<li><b>' + esc(k.nom) + '</b><br>' + esc(k.description) + '</li>').join('') + '</ul>';
   const nt = notes.filter(x => x.a === a.id).slice(0, 4);
   if (nt.length) h += '<h3>Notes reçues de l’équipe</h3><ul class="jr">' + nt.map(x => '<li><time>de ' + esc((PAR_ID[x.de] || { nom: 'l’équipe' }).nom) + (x.lu ? ' · lue' : ' · nouvelle') + '</time>' + esc(x.texte) + '</li>').join('') + '</ul>';
   if (a.type === 'chef') h += quetesHtml() + '<p class="note">Tes points viennent des quêtes accomplies.</p>';
   return h; }
-async function majJournal() { if (!PRIVE) return; try { journal = await lis('/api/journal'); notes = await lis('/api/notes'); majNiveaux(); } catch (e) {} }
+async function majJournal() { if (!PRIVE) return; try { journal = await lis('/api/journal'); notes = await lis('/api/notes'); skills = await lis('/api/skills'); majNiveaux(); } catch (e) {} }
 
 // --- contrôle de Julian
 const HAUT = ['ArrowUp', 'z', 'w'], BAS = ['ArrowDown', 's'], GAUCHE = ['ArrowLeft', 'q', 'a'], DROITE = ['ArrowRight', 'd'];
