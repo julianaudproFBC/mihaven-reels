@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Le Bureau des Agents IA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Mise en page : la scène du bureau à gauche, le fil d'activité à droite ; tout s'empile sur téléphone. */
+:root{
+  --nuit:#0d1322; --panneau:#151c31; --trait:#2a3352; --or:#c9a35c; --or-doux:#e6cf9e;
+  --creme:#f3ece0; --gris:#9aa3bd; --bordeaux:#69393C; --vert:#5fcf96; --ambre:#f0b352;
+  --titre:"Cormorant Garamond",Georgia,serif; --texte:"DM Sans",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--nuit);color:var(--creme);font:15px/1.45 var(--texte);
+  padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin-bottom:14px}
+h1{font:600 clamp(26px,4vw,38px)/1 var(--titre);margin:0;letter-spacing:.5px;color:var(--or-doux)}
+.sous{color:var(--gris);font-size:13px}
+.maj{margin-left:auto;color:var(--gris);font-size:12px;font-variant-numeric:tabular-nums}
+.grille{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media(max-width:1000px){.grille{grid-template-columns:minmax(0,1fr)}}
+.defile{overflow-x:auto;border-radius:18px;border:1px solid var(--trait);background:#0a0f1c}
+.scene{position:relative;min-width:860px;aspect-ratio:1672/941;background:url(bureau.jpg) center/cover}
+.pole{position:absolute;border:0;padding:0;background:none;border-radius:22px;cursor:pointer;color:inherit;font:inherit;text-align:left}
+.pole:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+.pole.choisi{box-shadow:0 0 0 2px var(--or) inset}
+.pole.vide{background:rgba(9,13,24,.62);backdrop-filter:grayscale(1)}
+.pole.vide::after{content:"À recruter";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font:600 clamp(12px,1.5vw,20px) var(--titre);letter-spacing:3px;text-transform:uppercase;color:var(--or-doux);
+  border:1px dashed var(--or);padding:.35em .9em;border-radius:40px;background:rgba(13,19,34,.7);white-space:nowrap}
+.etat{position:absolute;left:4%;top:5%;display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:40px;
+  background:rgba(13,19,34,.86);border:1px solid var(--trait);font-size:clamp(10px,1vw,13px);font-weight:500;white-space:nowrap}
+.pt{width:8px;height:8px;border-radius:50%;background:var(--vert);flex:none}
+.travaille .pt{background:var(--ambre);animation:pouls 1s infinite}
+.travaille{animation:halo 1.6s infinite}
+.bulle{position:absolute;right:6%;top:22%;padding:8px 12px;border-radius:14px 14px 14px 3px;background:var(--creme);color:#1b2036;
+  font-size:clamp(10px,1vw,13px);font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:flotte 2.4s ease-in-out infinite}
+.bulle i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#1b2036;margin-left:3px;animation:pouls 1s infinite}
+.bulle i:nth-child(2){animation-delay:.2s}.bulle i:nth-child(3){animation-delay:.4s}
+@keyframes pouls{50%{opacity:.25}}
+@keyframes halo{0%,100%{box-shadow:0 0 0 2px rgba(240,179,82,.9) inset,0 0 26px rgba(240,179,82,.35)}50%{box-shadow:0 0 0 2px rgba(240,179,82,.35) inset,0 0 8px rgba(240,179,82,.1)}}
+@keyframes flotte{50%{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+aside{display:grid;gap:14px}
+.carte{background:var(--panneau);border:1px solid var(--trait);border-radius:16px;padding:16px}
+.carte h2{font:600 21px/1.1 var(--titre);margin:0 0 10px;color:var(--or-doux);letter-spacing:.3px}
+.chiffres{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chiffres div{background:var(--nuit);border-radius:12px;padding:10px 8px;text-align:center}
+.chiffres b{display:block;font:600 28px/1 var(--titre);color:var(--creme);font-variant-numeric:tabular-nums}
+.chiffres span{font-size:11px;color:var(--gris)}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fil li{display:flex;gap:10px;align-items:baseline;font-size:13.5px}
+.fil time{color:var(--gris);font-size:12px;flex:none;width:76px;font-variant-numeric:tabular-nums}
+a{color:var(--or-doux)}
+.detail p{margin:0 0 8px;color:#d5d9e6;font-size:14px}
+.tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:30px;border:1px solid var(--trait);color:var(--gris);margin:0 4px 4px 0}
+.tag.ok{border-color:var(--vert);color:var(--vert)}
+.note{color:var(--gris);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Le Bureau des Agents IA</h1>
+  <span class="sous">Mi-Haven · French Business Club</span>
+  <span class="maj" id="maj">Connexion…</span>
+</header>
+<div class="grille">
+  <div class="defile"><div class="scene" id="scene"></div></div>
+  <aside>
+    <section class="carte">
+      <h2>Agent Reels · @mihaven.ma</h2>
+      <div class="chiffres">
+        <div><b id="n-jour">–</b><span>aujourd'hui</span></div>
+        <div><b id="n-total">–</b><span>au total</span></div>
+        <div><b id="n-next">–</b><span>prochain passage</span></div>
+      </div>
+      <p class="note" id="etat-reels">Lecture de l'état de l'agent…</p>
+    </section>
+    <section class="carte detail" id="detail"></section>
+    <section class="carte">
+      <h2>Derniers Reels publiés</h2>
+      <ul class="fil" id="fil"><li>Chargement…</li></ul>
+    </section>
+  </aside>
+</div>
+<script>
+const REPO = 'julianaudproFBC/mihaven-reels';
+const HEURES_UTC = [0, 2, 5, 7, 10, 12, 14, 17, 19, 21];   // passages de l'agent Reels
+const FORMATS = { visite: 'Visite guidée', rapide: 'Coupes rapides', duel: 'Duel A ou B', carnet: 'Carnet de voyage', mosaique: '48 logements', vide: 'Appartement vide', details: 'Les détails', etapes: 'La méthode en 3 étapes' };
+// Les pôles : position sur l'image (en %), agents en service, ce qui reste à brancher.
+const POLES = [
+  { id: 'marketing', nom: 'Marketing', box: [1.2, 62.5, 35.5, 34], agents: ['Agent Reels : fabrique et publie 10 Reels par jour sur @mihaven.ma'], afaire: ['Statistiques Instagram', 'Meta Ads'], live: true,
+    texte: 'Le seul pôle suivi en direct pour l\'instant : quand l\'agent fabrique un Reel, le pôle s\'allume.' },
+  { id: 'mihaven', nom: 'Mi-Haven', box: [2.4, 3, 33.5, 33], agents: ['Réponse automatique GESTION : envoie le formulaire propriétaires', 'Réponse automatique SÉJOUR : répond aux voyageurs'], afaire: ['Back-office Mi-Haven', 'WhatsApp', 'E-mails'],
+    texte: 'Deux automatisations Meta répondent aux commentaires en message privé. Elles sont en service, mais leur activité n\'est pas encore mesurée ici.' },
+  { id: 'fbc', nom: 'FBC', box: [64, 3, 34, 33], agents: ['Réponse automatique INVITATION', 'Réponse automatique PITCH'], afaire: ['Back-office FBC', 'CRM du Sheet', 'Brevo (e-mails)'],
+    texte: 'Deux automatisations Meta sur @french.business.club. En service, activité pas encore mesurée ici.' },
+  { id: 'direction', nom: 'Direction', box: [33.5, 32, 30, 38.5], agents: ['Julian'], afaire: ['Résumé quotidien de tous les pôles'],
+    texte: 'Ton poste. À terme : un point du jour qui résume ce que chaque pôle a fait.' },
+  { id: 'support', nom: 'Support', box: [1.8, 38, 26.5, 23], vide: true, afaire: ['Agent qui répond aux commentaires et aux messages'], texte: 'Aucun agent pour l\'instant.' },
+  { id: 'finance', nom: 'Finance', box: [68.8, 38, 30, 23], vide: true, afaire: ['Suivi des revenus et des dépenses par logement'], texte: 'Aucun agent pour l\'instant.' },
+  { id: 'commercial', nom: 'Commercial', box: [61, 62.5, 38, 34], vide: true, afaire: ['Suivi des formulaires propriétaires reçus', 'Relances'], texte: 'Aucun agent pour l\'instant.' },
+];
+const $ = id => document.getElementById(id);
+const scene = $('scene'); let choisi = 'marketing', travaille = false;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function dessine() {
+  scene.innerHTML = '';
+  for (const p of POLES) {
+    const b = document.createElement('button'); b.type = 'button';
+    const actif = p.live && travaille;
+    b.className = 'pole' + (p.vide ? ' vide' : '') + (p.id === choisi ? ' choisi' : '') + (actif ? ' travaille' : '');
+    Object.assign(b.style, { left: p.box[0] + '%', top: p.box[1] + '%', width: p.box[2] + '%', height: p.box[3] + '%' });
+    b.setAttribute('aria-label', 'Pôle ' + p.nom);
+    if (!p.vide) b.innerHTML = `<span class="etat"><span class="pt"></span>${actif ? 'Au travail' : p.live ? 'En veille' : p.id === 'direction' ? 'Toi' : 'En service'}</span>` + (actif ? '<span class="bulle">Je fabrique un Reel<i></i><i></i><i></i></span>' : '');
+    b.onclick = () => { choisi = p.id; dessine(); };
+    scene.appendChild(b);
+  }
+  const p = POLES.find(x => x.id === choisi);
+  $('detail').innerHTML = `<h2>Pôle ${esc(p.nom)}</h2><p>${esc(p.texte)}</p>` +
+    (p.agents || []).map(a => `<span class="tag ok">${esc(a)}</span>`).join('') +
+    (p.afaire || []).map(a => `<span class="tag">À brancher : ${esc(a)}</span>`).join('');
+}
+const hm = d => d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Casablanca' });
+const jour = d => d.toLocaleDateString('fr-CA', { timeZone: 'Africa/Casablanca' });
+function prochain() {
+  const n = new Date(); let best = null;
+  for (let j = 0; j < 2 && !best; j++) for (const h of HEURES_UTC) { const t = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + j, h, 0)); if (t > n) { best = t; break; } }
+  const m = Math.round((best - n) / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`;
+}
+async function lis(url) { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.json(); }
+async function maj() {
+  try {
+    const t = Date.now(), raw = `https://raw.githubusercontent.com/${REPO}/main/`;
+    const [hist, pub] = await Promise.all([lis(raw + 'history.json?t=' + t), lis(raw + 'published.json?t=' + t)]);
+    const tout = [...pub.map(x => ({ ...x, format: 'Reel de lancement' })), ...hist.map(x => ({ ...x, format: FORMATS[x.format] || x.format }))].sort((a, b) => new Date(b.at) - new Date(a.at));
+    const auj = jour(new Date());
+    $('n-total').textContent = tout.length; $('n-jour').textContent = tout.filter(x => jour(new Date(x.at)) === auj).length; $('n-next').textContent = prochain();
+    $('fil').innerHTML = tout.slice(0, 8).map(x => { const d = new Date(x.at); return `<li><time>${jour(d) === auj ? hm(d) : d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Africa/Casablanca' }) + ' ' + hm(d)}</time><a href="${esc(x.permalink)}" target="_blank" rel="noopener">${esc(x.format)}</a></li>`; }).join('') || '<li>Aucun Reel publié pour l\'instant.</li>';
+    $('maj').textContent = 'Mis à jour à ' + hm(new Date());
+  } catch (e) { $('maj').textContent = 'Données indisponibles, nouvel essai dans 1 min'; }
+  try {
+    const r = await lis(`https://api.github.com/repos/${REPO}/actions/workflows/post.yml/runs?per_page=1`);
+    const run = r.workflow_runs && r.workflow_runs[0]; const avant = travaille;
+    travaille = !!run && run.status !== 'completed';
+    $('etat-reels').textContent = travaille ? 'L\'agent fabrique un Reel en ce moment.' : run && run.conclusion !== 'success' ? 'Le dernier passage a échoué : l\'agent réessaie au prochain créneau.' : 'En veille. Le dernier passage s\'est bien terminé.';
+    if (avant !== travaille) dessine();
+  } catch (e) { $('etat-reels').textContent = 'État en direct indisponible pour le moment.'; }
+}
+dessine(); maj(); setInterval(maj, 75000); setInterval(() => { $('n-next').textContent = prochain(); }, 30000);
+</script>
+</body>
+</html>
