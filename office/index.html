@@ -76,12 +76,45 @@ a{color:#7a4a12}
 #aide{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(10px,env(safe-area-inset-bottom,0px));color:#5f5a4d;font-size:11.5px;pointer-events:none}
 @media(max-width:1180px){#aide{display:none}}
 @media(prefers-reduced-motion:reduce){.bulle,.nom i{animation:none}}
+
+#fiche{transition:width .25s ease}
+#fiche.large{width:400px}
+@media(max-width:820px){#fiche.large{width:auto}}
+#jeu{position:fixed;left:max(16px,env(safe-area-inset-left,0px));top:calc(max(12px,env(safe-area-inset-top,0px)) + 86px);display:flex;gap:8px;flex-wrap:wrap;max-width:340px}
+#jeu .btn{background:var(--panneau);font-size:12px;padding:6px 12px}
+#jeu .btn.actif{background:var(--or);color:#fff}
+#indice{position:fixed;left:50%;bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 8px);transform:translateX(-50%);background:#17171b;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:30px;border:0;cursor:pointer;z-index:5}
+#toasts{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top,0px));transform:translateX(-50%);display:grid;gap:8px;z-index:6;pointer-events:none}
+.toast{background:#17171b;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:30px;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:pop .25s ease-out}
+#croix{position:fixed;bottom:calc(max(70px,env(safe-area-inset-bottom,0px)) + 60px);right:max(18px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px;z-index:5}
+#croix button{border:1px solid var(--trait);background:var(--panneau);border-radius:14px;font-size:20px;font-weight:700;touch-action:none}
+#croix button:nth-child(1){grid-column:2}#croix button:nth-child(2){grid-column:1;grid-row:2}#croix button:nth-child(3){grid-column:2;grid-row:2}#croix button:nth-child(4){grid-column:3;grid-row:2}
+@media(hover:hover) and (pointer:fine){#croix{display:none!important}}
+.niv{font-style:normal;font-size:10px;font-weight:700;background:var(--or);color:#fff;border-radius:10px;padding:1px 6px;margin-left:2px}
+.xp{height:8px;border-radius:5px;background:#e6dfd0;overflow:hidden;margin:6px 0 10px}.xp i{display:block;height:100%;background:linear-gradient(90deg,#c9801c,#e9b44c);border-radius:5px;transition:width .6s ease}
+.tete{display:flex;gap:12px;align-items:center;margin-bottom:8px}.tete .rond{width:54px;height:54px;border-radius:50%;flex:none;box-shadow:inset 0 -8px 0 rgba(0,0,0,.12)}
+.rapides{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.rapides .btn{font-size:12px;padding:6px 11px;font-weight:500}
+.quetes li{display:flex;gap:8px;align-items:center;font-size:13px}.quetes b{width:18px;height:18px;border-radius:50%;border:2px solid var(--trait);flex:none;display:inline-grid;place-items:center;font-size:11px}
+.quetes li.ok b{background:var(--vert);border-color:var(--vert);color:#fff}.quetes li.ok span{text-decoration:line-through;color:var(--gris)}
+.jr li{font-size:12.5px;border-left:3px solid var(--trait);padding-left:8px}.jr time{color:var(--gris);font-size:11px;display:block}
+#salle-choix{position:fixed;inset:0;background:rgba(30,26,18,.35);display:grid;place-items:center;z-index:8;padding:16px}
+#salle-choix form{background:#fcf9f3;border:1px solid var(--trait);border-radius:18px;padding:18px;width:min(380px,100%);max-height:90%;overflow:auto}
+#salle-choix label{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:14px}
+.nom{color:#fff}
+body.nuit h1{color:#fff}body.nuit .sous,body.nuit #aide{color:#d9dcea}
+body.pov #fiche{display:none}
+body.pov #chat{height:230px;opacity:.94}
 </style>
 </head>
 <body class="vue-chat">
 <canvas id="gl"></canvas>
 <div id="hud"></div>
 <header class="titre"><h1>Le Campus des Agents IA</h1><div class="sous" id="maj">Mi-Haven · French Business Club</div><div class="sous" id="mode"></div></header>
+<div id="jeu"><button class="btn" id="b-jouer">Prendre le contrôle de Julian</button><button class="btn" id="b-pov" hidden>Vue 1re personne</button><button class="btn" id="b-reunion">Lancer une réunion</button></div>
+<div id="toasts"></div>
+<button id="indice" hidden></button>
+<div id="croix" hidden><button data-k="haut" aria-label="Avancer">↑</button><button data-k="gauche" aria-label="Gauche">←</button><button data-k="bas" aria-label="Reculer">↓</button><button data-k="droite" aria-label="Droite">→</button></div>
+<div id="salle-choix" hidden><form><h2>Qui vient à la réunion ?</h2><div class="role">Les agents choisis vont en salle de réunion et répondent chacun leur tour.</div><div id="salle-liste"></div><p><label for="salle-sujet">Sujet</label><input id="salle-sujet" style="width:100%;padding:9px 11px;border:1px solid var(--trait);border-radius:10px;font:14px var(--texte);background:#f3eee3" placeholder="Par exemple : point de la semaine"></p><button class="btn plein" type="submit">Commencer</button> <button class="btn" type="button" id="salle-annuler">Annuler</button></form></div>
 <section id="fiche" class="pan" aria-live="polite"></section>
 <section id="chat" class="pan" aria-label="Discussion avec les agents">
   <div class="barre"><select id="canal" aria-label="Choisir la conversation"></select><button class="lien" id="oublier" style="margin:0" hidden>Oublier la clé</button></div>
@@ -271,10 +304,10 @@ let choisi = null;
 function etatDe(a) { if (a.ecrit) return ['w', 'Te répond']; if (a.type === 'reels' && reaTravaille()) return ['w', 'Fabrique un Reel']; if (a.type === 'ops' && opsEnPassage()) return ['w', 'En passage'];
   if (a.etat === 'marche') return ['p', 'En chemin']; if (a.etat === 'poste') return ['', a.type === 'auto' ? 'En service' : 'À son poste']; const s = a.spot; return ['p', s && s.act === 'baby' ? 'Au baby-foot' : s && s.act === 'ping' ? 'Au ping-pong' : s && s.act === 'yoga' ? 'Au yoga' : s && s.act === 'pitch' ? 'Répète un pitch' : 'En pause']; }
 const hex = n => '#' + n.toString(16).padStart(6, '0');
-function fiche() { const f = $('fiche'), R = data;
+function fiche() { const f = $('fiche'), R = data; f.classList.toggle('large', !!choisi); majNiveaux();
   if (!choisi) { f.innerHTML = '<h2>L\'équipe</h2><div class="role">12 sur le campus · 6 autonomes, 5 en conseil</div><div class="chiffres"><div><b>' + (R.ok ? R.jour : '–') + '</b><span>Reels aujourd\'hui</span></div><div><b>' + (R.ok ? R.tout.length : '–') + '</b><span>au total</span></div><div><b>' + dans(HEURES_REELS) + '</b><span>prochain Reel</span></div></div><h3>Agents</h3>' +
       TEAM.map(a => { const e = etatDe(a); return '<button class="ligne" data-a="' + a.id + '"><span class="pastille" style="background:' + hex(a.couleur) + '"></span><span><b>' + esc(a.nom) + '</b><small>' + esc(a.role) + '</small></span><span class="etat ' + e[0] + '">' + e[1] + '</span></button>'; }).join('') +
-      '<button class="btn" id="demo" style="margin-top:10px">Voir une démo de Réa au travail</button><p class="note">« Autonome » : l\'agent travaille seul, en vrai. « Conseil » : il réfléchit avec toi dans la discussion, mais n\'agit pas encore. Les pauses et les jeux sont décoratifs.</p>';
+      quetesHtml() + '<button class="btn" id="demo" style="margin-top:10px">Voir une démo de Réa au travail</button><p class="note">« Autonome » : l\'agent travaille seul, en vrai. « Conseil » : il réfléchit avec toi dans la discussion, mais n\'agit pas encore. Les pauses et les jeux sont décoratifs.</p>';
     f.querySelectorAll('[data-a]').forEach(b => b.onclick = () => choisir(PAR_ID[b.dataset.a])); $('demo').onclick = () => { data.demo = performance.now() + 25000; choisir(PAR_ID.rea); }; return; }
   const a = choisi, e = etatDe(a); let h = '<button class="lien" id="retour">← Toute l\'équipe</button><h2>' + esc(a.nom) + '</h2><div class="role">' + esc(a.role) + ' · ' + a.mode + ' · <span class="etat ' + e[0] + '" style="margin:0">' + e[1] + '</span></div><p>' + esc(a.trait) + '</p>';
   if (a.type !== 'chef') h += '<button class="btn plein" id="ecrire">Écrire à ' + esc(a.nom) + '</button>';
@@ -283,9 +316,11 @@ function fiche() { const f = $('fiche'), R = data;
   else if (a.type === 'ops') h += '<h3>Son travail</h3><p>Il passe toutes les heures, de 7 h 30 à 21 h 30 : tri des e-mails, réponses préparées, leads, sponsors FBC. Brief à 7 h 30, 12 h 30 et 17 h 30. Tout message vers l\'extérieur reste en brouillon à valider.</p><p><b>Lui donner un ordre :</b> envoie-toi un e-mail dont l\'objet commence par « ATLAS ». Il l\'exécute au passage suivant et te répond dans le même fil.</p><div class="chiffres"><div><b>' + dans(PASSAGES_OPS) + '</b><span>prochain passage</span></div><div><b>15</b><span>passages par jour</span></div><div><b>0</b><span>envoi sans toi</span></div></div><p class="note">Ses passages sont affichés d\'après son planning. Dans la discussion, il te répond mais ne lit pas tes e-mails.</p>';
   else if (a.type === 'auto') h += '<h3>Son travail</h3><p>Mot-clé surveillé : <b>' + a.mot + '</b>. Quand quelqu\'un le commente, la réponse part en message privé.</p><p class="note">L\'automatisation Meta est en service, mais son activité n\'est pas encore mesurée ici.</p>';
   else if (a.type === 'conseil') h += '<h3>Son travail</h3><p class="note">' + (PRIVE ? 'En mode privé, il agit avec tes outils connectés : il lit, cherche, range et prépare des brouillons. Il n\'envoie rien sans toi.' : 'Sur la page publique, il réfléchit et rédige avec toi, sans accès à tes outils.') + '</p>';
-  f.innerHTML = h; $('retour').onclick = () => choisir(null); if ($('ecrire')) $('ecrire').onclick = () => ouvrirCanal(a.id); }
+  h = tete(a) + h.replace(/^[^]*?<\/div>/, '') + tableau(a);
+  f.innerHTML = h; $('retour').onclick = () => choisir(null); if ($('ecrire')) $('ecrire').onclick = () => ouvrirCanal(a.id);
+  f.querySelectorAll('[data-ordre]').forEach(b => b.onclick = () => { ouvrirCanal(a.id); $('texte').value = b.dataset.ordre; $('saisie').requestSubmit(); }); }
 function choisir(a) { if (choisi) choisi.halo.visible = false; choisi = a; view.suit = a; if (a) { a.halo.visible = true; view.tzoom = 2.2; vue('fiche'); } else { view.tzoom = 1; view.tx = BASE()[0]; view.tz = BASE()[1]; } fiche(); }
-function vue(v) { document.body.className = 'vue-' + v; }
+function vue(v) { document.body.classList.remove('vue-chat', 'vue-fiche'); document.body.classList.add('vue-' + v); }
 document.querySelectorAll('#onglets button').forEach(b => b.onclick = () => vue(b.dataset.vue));
 
 // ================= discussion
@@ -293,11 +328,11 @@ const canalSel = $('canal'), msgs = $('msgs'); let canal = 'bureau', attente = f
 canalSel.innerHTML = '<option value="bureau"># Le bureau (toute l\'équipe)</option>' + TEAM.filter(a => a.type !== 'chef').map(a => '<option value="' + a.id + '">Message privé · ' + esc(a.nom) + ' (' + esc(a.role) + ')</option>').join('');
 const histo = c => { try { return JSON.parse(mem.get('bureau.chat.' + c) || '[]'); } catch (e) { return []; } }, garde = (c, h) => mem.set('bureau.chat.' + c, JSON.stringify(h.slice(-40)));
 function affiche() { const h = histo(canal), cle = PRIVE || mem.get('bureau.cle'); $('cle').hidden = !!cle; $('saisie').hidden = !cle; $('oublier').hidden = !cle || PRIVE;
-  msgs.innerHTML = (h.length ? '' : '<div class="m sys">' + (canal === 'bureau' ? 'Écris à toute l\'équipe. Atlas répond en premier et passe la parole aux bons agents.' : 'Conversation privée avec ' + esc(PAR_ID[canal].nom) + '.') + '</div>') +
+  msgs.innerHTML = (h.length ? '' : '<div class="m sys">' + (canal === 'bureau' ? 'Écris à toute l\'équipe. Atlas répond en premier et passe la parole aux bons agents.' : (PAR_ID[canal] ? 'Conversation privée avec ' + esc(PAR_ID[canal].nom) + '.' : 'Réunion en cours : écris, chaque participant répond à son tour.')) + '</div>') +
     h.map(m => m.de === 'moi' ? '<div class="m moi">' + esc(m.t) + '</div>' : m.de === 'sys' || !PAR_ID[m.de] ? '<div class="m sys">' + esc(m.t) + '</div>' : '<div class="m eux"><b style="color:' + hex(PAR_ID[m.de].couleur) + '">' + esc(PAR_ID[m.de].nom) + '</b>' + esc(m.t) + '</div>').join('') + (attente ? '<div class="m sys">' + (PRIVE ? 'Au travail… cela peut prendre une à deux minutes.' : 'Ils écrivent…') + '</div>' : '');
-  msgs.scrollTop = msgs.scrollHeight; $('texte').placeholder = canal === 'bureau' ? 'Écris au bureau…' : 'Écris à ' + PAR_ID[canal].nom + '…'; }
+  msgs.scrollTop = msgs.scrollHeight; $('texte').placeholder = canal === 'bureau' ? 'Écris au bureau…' : 'Écris à ' + (PAR_ID[canal] || { nom: 'la réunion' }).nom + '…'; }
 function ouvrirCanal(c) { canal = c; canalSel.value = c; vue('chat'); affiche(); $('texte').focus(); }
-canalSel.onchange = () => { canal = canalSel.value; affiche(); if (canal !== 'bureau') { const a = PAR_ID[canal]; if (choisi) choisi.halo.visible = false; choisi = a; a.halo.visible = true; view.suit = a; view.tzoom = 2.2; fiche(); } };
+canalSel.onchange = () => { canal = canalSel.value; affiche(); if (PAR_ID[canal]) { const a = PAR_ID[canal]; if (choisi) choisi.halo.visible = false; choisi = a; a.halo.visible = true; view.suit = a; view.tzoom = 2.2; fiche(); } };
 $('cle').onsubmit = e => { e.preventDefault(); const v = $('cle-in').value.trim(); if (v) { mem.set('bureau.cle', v); $('cle-in').value = ''; affiche(); } };
 $('oublier').onclick = () => { mem.set('bureau.cle', null); affiche(); };
 function contexte() { const R = data; return 'CONTEXTE. Julian Audibert dirige à Casablanca : Mi-Haven (conciergerie et gestion locative courte durée, 48 logements à Casablanca, Marrakech et El Jadida ; un logement vide est meublé et prêt en moins de 21 jours) et le French Business Club, FBC (soirées networking francophones « The Bridge AfterWork » à l\'Onomo Hotel City Center ; prochaine édition, la n°14, jeudi 26 novembre 2026, 300 MAD en prévente).\n' +
@@ -318,14 +353,14 @@ async function claude(system, messages, agent) {
   return (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim(); }
 $('saisie').onsubmit = async e => { e.preventDefault(); const t = $('texte').value.trim(); if (!t || attente) return; $('texte').value = '';
   const c = canal, h = histo(c); h.push({ de: 'moi', t }); garde(c, h); attente = true; affiche();
-  const cible = c === 'bureau' ? PAR_ID.atlas : PAR_ID[c]; cible.appel = performance.now() + 90000; cible.ecrit = true;
+  const cible = PAR_ID[c] || PAR_ID.atlas; quete('ordre'); cible.appel = performance.now() + 90000; cible.ecrit = true;
   const court = s => s.slice(0, 110) + (s.length > 110 ? '…' : '');
   try {
-    if (c === 'bureau') {
-      const sys = contexte() + '\n\nTU ES LA RÉGIE DU SALON « Le bureau ». Julian écrit à toute l\'équipe. Fais répondre 1 à 3 agents, chacun avec sa personnalité et dans son domaine. Atlas (chef des ops) répond en premier et coordonne, sauf si le message s\'adresse clairement à un seul autre agent. Identifiants : ' + TEAM.filter(a => a.type !== 'chef').map(a => a.id + ' = ' + a.nom).join(', ') + '.\nPersonnalités : ' + TEAM.filter(a => a.type !== 'chef').map(a => a.nom + ' : ' + a.trait).join(' ') + '\nRéponds UNIQUEMENT par un tableau JSON valide, sans texte autour : [{"id":"atlas","texte":"…"}].';
-      const txt = await claude(sys, tours(h.slice(-14).map(m => ({ de: m.de, c: m.de === 'moi' ? m.t : JSON.stringify([{ id: m.de, texte: m.t }]) }))), 'bureau');
+    if (!PAR_ID[c]) { const membres = c === 'reunion' && reunion ? reunion.membres : TEAM.filter(a => a.type !== 'chef');
+      const sys = contexte() + (c === 'reunion' && reunion ? '\n\nRÉUNION EN SALLE. Sujet : ' + reunion.sujet + '. Participants : ' + membres.map(a => a.nom).join(', ') + '. Chaque participant concerné prend la parole une fois, dans son domaine, en 1 à 3 phrases ; le dernier à parler résume les décisions et qui fait quoi.' : '\n\nSALON « Le bureau ». Julian écrit à toute l’équipe. Fais répondre 1 à 3 agents ; Atlas répond en premier et coordonne, sauf si le message vise clairement un seul autre agent.') + ' Identifiants : ' + membres.map(a => a.id + ' = ' + a.nom).join(', ') + '.\nPersonnalités : ' + membres.map(a => a.nom + ' : ' + a.trait).join(' ') + '\nRéponds UNIQUEMENT par un tableau JSON valide, sans texte autour : [{"id":"atlas","texte":"…"}].';
+      const txt = await claude(sys, tours(h.slice(-14).map(m => ({ de: m.de, c: m.de === 'moi' ? m.t : JSON.stringify([{ id: m.de, texte: m.t }]) }))), c);
       let rep; try { rep = JSON.parse(txt.slice(txt.indexOf('['), txt.lastIndexOf(']') + 1)); } catch (err) { rep = [{ id: 'atlas', texte: txt }]; }
-      const h2 = histo(c); rep.filter(x => x && PAR_ID[x.id] && x.texte).slice(0, 3).forEach((x, i) => { const s = String(x.texte), a = PAR_ID[x.id]; h2.push({ de: x.id, t: s }); a.appel = performance.now() + 30000; setTimeout(() => parle(a, court(s), 5000), i * 2600); }); garde(c, h2);
+      const h2 = histo(c); rep.filter(x => x && PAR_ID[x.id] && x.texte).slice(0, c === 'reunion' ? 6 : 3).forEach((x, i) => { const s = String(x.texte), a = PAR_ID[x.id]; h2.push({ de: x.id, t: s }); a.appel = performance.now() + 30000; setTimeout(() => parle(a, court(s), 5000), i * 2600); }); garde(c, h2);
     } else { const a = PAR_ID[c];
       const sys = contexte() + '\n\nTU ES ' + a.nom.toUpperCase() + ', ' + a.role + ' sur le campus. Ta personnalité : ' + a.trait + ' Statut : ' + a.mode + '. Julian t\'écrit en message privé. Réponds en ton nom, à la première personne, sans préfixe.';
       const txt = await claude(sys, tours(h.slice(-16).map(m => ({ de: m.de, c: m.t }))), a.id);
@@ -342,18 +377,18 @@ let bulle = null;
 function parle(a, txt, ms) { if (bulle) bulle.d.remove(); const d = document.createElement('div'); d.className = 'bulle'; d.textContent = txt; hud.appendChild(d); bulle = { d, a, fin: performance.now() + (ms || 3600) }; }
 const confettis = [];
 function fete() { const a = PAR_ID.rea; parle(a, 'Publié sur @mihaven.ma !', 5000); for (let i = 0; i < 70; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.18, .11), new THREE.MeshBasicMaterial({ color: pick([0xf58a1f, 0xffffff, 0x9b5de5, 0x35c2c9, 0xf2bf1d]), side: THREE.DoubleSide })); m.position.set(a.g.position.x + rnd(-1, 1), 3, a.g.position.z + rnd(-1, 1)); m.userData = { vx: rnd(-2, 2), vy: rnd(3, 7), vz: rnd(-2, 2), r: rnd(-6, 6) }; scene.add(m); confettis.push(m); } }
-function proj(v, el, dy) { const p = v.clone().project(cam); el.style.left = ((p.x + 1) / 2 * innerWidth) + 'px'; el.style.top = ((1 - p.y) / 2 * innerHeight + (dy || 0)) + 'px'; }
+function proj(v, el, dy) { const c = camActif(), p = v.clone().project(c), derriere = ctrl.pov && (p.z > 1 || v.distanceTo(c.position) > 45); el.style.visibility = derriere ? 'hidden' : ''; el.style.left = ((p.x + 1) / 2 * innerWidth) + 'px'; el.style.top = ((1 - p.y) / 2 * innerHeight + (dy || 0)) + 'px'; }
 
 // ================= caméra et pointeur
-function cadre() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); const haut = (w < 820 ? 86 : 54) / view.zoom, larg = haut * w / h; cam.left = -larg / 2; cam.right = larg / 2; cam.top = haut / 2; cam.bottom = -haut / 2; cam.updateProjectionMatrix(); }
+function cadre() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); const haut = (w < 820 ? 86 : 54) / view.zoom, larg = haut * w / h; cam.left = -larg / 2; cam.right = larg / 2; cam.top = haut / 2; cam.bottom = -haut / 2; cam.updateProjectionMatrix(); camPov.aspect = w / h; camPov.updateProjectionMatrix(); }
 addEventListener('resize', cadre);
 const ray = new THREE.Raycaster(), souris = new THREE.Vector2(); let glisse = null, pts = {};
-function vise(e) { souris.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(souris, cam); const h = ray.intersectObjects(TEAM.map(a => a.g), true)[0]; return h ? h.object.userData.agent : null; }
+function vise(e) { souris.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(souris, camActif()); const h = ray.intersectObjects(TEAM.map(a => a.g), true)[0]; return h ? h.object.userData.agent : null; }
 canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); pts[e.pointerId] = [e.clientX, e.clientY]; glisse = { x: e.clientX, y: e.clientY, d: 0, pin: 0 }; });
 canvas.addEventListener('pointermove', e => { if (!glisse) { canvas.classList.toggle('main', !!vise(e)); return; } const ids = Object.keys(pts);
   if (ids.length === 2) { pts[e.pointerId] = [e.clientX, e.clientY]; const a = pts[ids[0]], b = pts[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (glisse.pin) view.tzoom = Math.max(.6, Math.min(4, view.tzoom * d / glisse.pin)); glisse.pin = d; glisse.d = 99; return; }
   const dx = e.clientX - glisse.x, dy = e.clientY - glisse.y; glisse.d += Math.abs(dx) + Math.abs(dy); glisse.x = e.clientX; glisse.y = e.clientY; pts[e.pointerId] = [e.clientX, e.clientY];
-  if (glisse.d > 6) { view.suit = null; const k = (cam.top - cam.bottom) / innerHeight, s = Math.SQRT1_2; view.tx = Math.max(-34, Math.min(34, view.tx + (-dx * s - dy * s * 1.45) * k)); view.tz = Math.max(-26, Math.min(32, view.tz + (dx * s - dy * s * 1.45) * k)); } });
+  if (ctrl.pov) { ctrl.lacet -= dx * .006; ctrl.tangage = Math.max(-.9, Math.min(.7, ctrl.tangage - dy * .004)); } else if (glisse.d > 6 && !ctrl.on) { view.suit = null; const k = (cam.top - cam.bottom) / innerHeight, s = Math.SQRT1_2; view.tx = Math.max(-34, Math.min(34, view.tx + (-dx * s - dy * s * 1.45) * k)); view.tz = Math.max(-26, Math.min(32, view.tz + (dx * s - dy * s * 1.45) * k)); } });
 function fin(e) { delete pts[e.pointerId]; if (glisse && glisse.d <= 6) { const a = vise(e); if (a) choisir(a); } if (!Object.keys(pts).length) glisse = null; else glisse.pin = 0; }
 canvas.addEventListener('pointerup', fin); canvas.addEventListener('pointercancel', fin);
 canvas.addEventListener('wheel', e => { e.preventDefault(); view.tzoom = Math.max(.6, Math.min(4, view.tzoom * (e.deltaY < 0 ? 1.12 : .89))); }, { passive: false });
@@ -361,16 +396,16 @@ canvas.addEventListener('wheel', e => { e.preventDefault(); view.tzoom = Math.ma
 // ================= boucle
 let avant = performance.now(), tBulle = 4, tEcran = 0, tHeure = 0;
 function lumiere() { const h = +new Date().toLocaleTimeString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Africa/Casablanca' }), nuit = h < 7 || h >= 19;
-  scene.background = new THREE.Color(nuit ? 0x2a2f45 : 0xe9e3d6); hemi.intensity = nuit ? .42 : .7; sun.intensity = nuit ? .28 : .75; sun.color.set(nuit ? 0x9fb4ff : 0xfff2dc); }
+  scene.background = new THREE.Color(nuit ? 0x353b57 : 0xe9e3d6); document.body.classList.toggle('nuit', nuit); hemi.intensity = nuit ? .6 : .7; sun.intensity = nuit ? .42 : .75; sun.color.set(nuit ? 0x9fb4ff : 0xfff2dc); }
 function tick(now) { const dt = Math.min(.05, (now - avant) / 1000); avant = now; const S = now / 1000, W = reaTravaille(), OPS = opsEnPassage();
   for (const a of TEAM) { a.t -= dt; const occupe = a.ecrit || now < a.appel || (a.type === 'reels' && W) || (a.type === 'ops' && OPS);
-    if (occupe) auPoste(a, true);
+    if (a.ctrl) { bouge(a, dt); } else if (a.reunion) { if (a.lieu !== 'salle' || (a.etat !== 'marche' && Math.hypot(a.g.position.x - a.reunion.x, a.g.position.z - a.reunion.zz) > .3)) va(a, a.reunion, 'salle', { vite: true }); } else if (occupe) auPoste(a, true);
     else if (a.etat === 'poste' && a.t < 0) { a.type === 'chef' || a.type === 'ops' ? (Math.random() < .6 ? visite(a) : enPause(a)) : enPause(a); a.t = a.type === 'auto' ? rnd(14, 24) : rnd(22, 45); }
     else if (a.etat === 'pause' && a.t < 0) { if (a.type === 'auto' || a.type === 'ops') { auPoste(a); a.t = rnd(40, 100); } else { Math.random() < .25 ? auPoste(a) : enPause(a); a.t = rnd(22, 45); } }
-    if (a.etat === 'marche') { const c = a.chemin[0], dx = c[0] - a.g.position.x, dz = c[1] - a.g.position.z, d = Math.hypot(dx, dz), pas = a.vitesse * dt;
+    if (!a.ctrl && a.etat === 'marche') { const c = a.chemin[0], dx = c[0] - a.g.position.x, dz = c[1] - a.g.position.z, d = Math.hypot(dx, dz), pas = a.vitesse * dt;
       if (d <= pas) { a.g.position.x = c[0]; a.g.position.z = c[1]; a.chemin.shift(); if (!a.chemin.length) { a.etat = a.apres; a.assis = !!a.arrivee.assis; a.g.rotation.y = a.arrivee.f || 0; a.tasse.visible = !!a.arrivee.tasse; } }
       else { a.g.position.x += dx / d * pas; a.g.position.z += dz / d * pas; let r = Math.atan2(dx, dz) - a.g.rotation.y; r = Math.atan2(Math.sin(r), Math.cos(r)); a.g.rotation.y += r * Math.min(1, dt * 10); } }
-    const m = a.etat === 'marche', w = Math.sin((S + a.ph) * (a.vitesse > 3 ? 14 : 9)), tape = a.etat === 'poste' && (a.ecrit || (a.type === 'reels' && W) || (a.type === 'ops' && OPS) || a.type === 'auto'), act = a.etat === 'pause' && a.spot ? a.spot.act : null;
+    const m = a.ctrl ? a.avance : a.etat === 'marche', w = Math.sin((S + a.ph) * (a.vitesse > 3 ? 14 : 9)), tape = a.etat === 'poste' && (a.ecrit || (a.type === 'reels' && W) || (a.type === 'ops' && OPS) || a.type === 'auto'), act = a.etat === 'pause' && a.spot ? a.spot.act : null;
     let b0 = 0, b1 = 0, z0 = 0, z1 = 0;
     if (m) { b0 = -w * .6; b1 = w * .6; } else if (tape) { b0 = -1.1 + Math.sin(S * 13 + a.ph) * .12; b1 = -1.1 + Math.cos(S * 11 + a.ph) * .12; }
     else if (act === 'baby') { b0 = -1.2 + Math.sin(S * 9 + a.ph) * .25; b1 = -1.2 + Math.cos(S * 7 + a.ph) * .25; }
@@ -393,8 +428,83 @@ function tick(now) { const dt = Math.min(.05, (now - avant) / 1000); avant = now
   const k = Math.min(1, dt * 4); view.x += (view.tx - view.x) * k; view.z += (view.tz - view.z) * k; if (Math.abs(view.tzoom - view.zoom) > .001) { view.zoom += (view.tzoom - view.zoom) * k; cadre(); }
   cam.position.set(view.x + DIR.x * 110, DIR.y * 110, view.z + DIR.z * 110); cam.lookAt(view.x, 0, view.z);
   plaques.forEach(p => proj(p.p, p.d));
-  renderer.render(scene, cam); requestAnimationFrame(tick); }
+  if (ctrl.pov) { const j = PAR_ID.julian.g.position; camPov.position.set(j.x, 1.85, j.z); camPov.rotation.set(ctrl.tangage, ctrl.lacet, 0, 'YXZ'); }
+  renderer.render(scene, camActif()); requestAnimationFrame(tick); }
 $('mode').textContent = PRIVE ? 'Mode privé : tes agents agissent avec tes outils' : 'Page publique : les agents conseillent, sans accès à tes outils';
+
+// ================= jeu : contrôle de Julian, réunions, niveaux, quêtes
+const ctrl = { on: false, pov: false, lacet: Math.PI, tangage: -.05, k: {} }, camPov = new THREE.PerspectiveCamera(72, 1, .1, 400);
+const camActif = () => ctrl.pov ? camPov : cam;
+let reunion = null, journal = [];
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; $('toasts').appendChild(d); setTimeout(() => d.remove(), 3600); }
+// quêtes du jour, gardées sur cet appareil
+const cleQ = () => 'bureau.quetes.' + jour(new Date());
+const etatQ = () => { try { return JSON.parse(mem.get(cleQ()) || '{}'); } catch (e) { return {}; } };
+const QUETES = [['parle', 'Aller parler à 3 agents sur le campus', 3], ['ordre', 'Donner un ordre ou poser une question', 1], ['reunion', 'Tenir une réunion', 1], ['pas', 'Marcher 200 mètres dans le campus', 200]];
+function quete(nom, valeur) { const q = etatQ(), avant = QUETES.filter(x => (q[x[0]] || 0) >= x[2]).length;
+  if (nom === 'parle') { q.vus = q.vus || []; if (!q.vus.includes(valeur)) q.vus.push(valeur); q.parle = q.vus.length; } else q[nom] = (q[nom] || 0) + (valeur || 1);
+  mem.set(cleQ(), JSON.stringify(q)); const apres = QUETES.filter(x => (q[x[0]] || 0) >= x[2]);
+  if (apres.length > avant) { toast('Quête accomplie : ' + apres[apres.length - 1][1]); mem.set('bureau.xp', String((+mem.get('bureau.xp') || 0) + 50)); if (!choisi) fiche(); } }
+function quetesHtml() { const q = etatQ(); return '<h3>Tes quêtes du jour</h3><ul class="quetes">' + QUETES.map(x => { const v = Math.min(x[2], Math.floor(q[x[0]] || 0)), ok = v >= x[2]; return '<li class="' + (ok ? 'ok' : '') + '"><b>' + (ok ? '✓' : '') + '</b><span>' + x[1] + (x[2] > 1 ? ' (' + v + '/' + x[2] + ')' : '') + '</span></li>'; }).join('') + '</ul>'; }
+// niveaux : uniquement à partir d’activité réelle
+function xpDe(a) { if (a.type === 'reels') return data.tout.length * 10; if (a.type === 'chef') return +mem.get('bureau.xp') || 0;
+  return journal.filter(j => j.agent === a.id).length * 25 + histo(a.id).filter(m => m.de === a.id).length * 5; }
+const niveau = xp => Math.floor(Math.sqrt(xp / 40)) + 1, seuil = n => 40 * (n - 1) * (n - 1);
+function majNiveaux() { TEAM.forEach(a => { const nv = niveau(xpDe(a)); if (a.nv !== nv) { if (a.nv && nv > a.nv) toast(a.nom + ' passe au niveau ' + nv); a.nv = nv; a.tag.innerHTML = '<i></i>' + esc(a.nom) + '<em class="niv">' + nv + '</em>'; } }); }
+function tete(a) { const xp = xpDe(a), nv = niveau(xp), e = etatDe(a), bas = seuil(nv), haut = seuil(nv + 1);
+  return '<button class="lien" id="retour">← Toute l’équipe</button><div class="tete"><span class="rond" style="background:' + hex(a.couleur) + '"></span><div><h2>' + esc(a.nom) + ' <em class="niv">Niveau ' + nv + '</em></h2><div class="role" style="margin:0">' + esc(a.role) + ' · ' + a.mode + ' · <span class="etat ' + e[0] + '" style="margin:0">' + e[1] + '</span></div></div></div><div class="xp" title="' + xp + ' points"><i style="width:' + Math.round((xp - bas) / (haut - bas) * 100) + '%"></i></div>'; }
+const ORDRES = { atlas: ['Trie mes e-mails d’aujourd’hui et dis-moi ce qui compte', 'Fais le point sur les leads de la semaine', 'Quels brouillons attendent ma validation ?'], rea: ['Propose 5 idées de Reels pour cette semaine', 'Quels formats ont le plus tourné ?'],
+  lina: ['Liste les nouveaux leads propriétaires et propose des créneaux de visite', 'Prépare un message de prise de contact pour le dernier lead'], omar: ['Prépare l’argumentaire pour une visite propriétaire', 'Comment répondre à « je préfère gérer seul » ?'],
+  scout: ['Que surveiller chez nos concurrents à Casablanca ?', 'Trouve 5 idées de contenu Mi-Haven'], sofia: ['Aide-moi à répondre à un voyageur mécontent', 'Rédige un message d’accueil voyageur'], fares: ['Explique-moi comment calculer la marge d’un logement', 'Quelles dépenses suivre chaque mois ?'],
+  ines: ['Que réponds-tu quand quelqu’un commente GESTION ?'], sami: ['Que réponds-tu quand quelqu’un commente SÉJOUR ?'], lea: ['Rédige l’invitation pour la prochaine soirée'], max: ['Aide-moi à préparer un pitch de 2 minutes'] };
+function tableau(a) { let h = ''; const o = ORDRES[a.id];
+  if (o) h += '<h3>Ordres rapides</h3><div class="rapides">' + o.map(t => '<button class="btn" data-ordre="' + esc(t) + '">' + esc(t) + '</button>').join('') + '</div>' + (PRIVE ? '' : '<p class="note">Sur la page publique, il répond sans agir. Lance le campus privé pour qu’il exécute.</p>');
+  const j = journal.filter(x => x.agent === a.id).slice(0, 5);
+  if (j.length) h += '<h3>Ses derniers travaux</h3><ul class="jr">' + j.map(x => '<li><time>' + new Date(x.quand).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '</time><b>' + esc(x.ordre || '') + '</b><br>' + esc((x.reponse || '').slice(0, 180)) + '</li>').join('') + '</ul>';
+  else if (PRIVE && a.type !== 'chef') h += '<h3>Ses derniers travaux</h3><p class="note">Rien pour l’instant. Donne-lui un ordre.</p>';
+  if (a.type === 'chef') h += quetesHtml() + '<p class="note">Tes points viennent des quêtes accomplies.</p>';
+  return h; }
+async function majJournal() { if (!PRIVE) return; try { journal = await lis('/api/journal'); majNiveaux(); } catch (e) {} }
+
+// --- contrôle de Julian
+const HAUT = ['ArrowUp', 'z', 'w'], BAS = ['ArrowDown', 's'], GAUCHE = ['ArrowLeft', 'q', 'a'], DROITE = ['ArrowRight', 'd'];
+function bouge(a, dt) { const k = ctrl.k, av = (k.haut ? 1 : 0) - (k.bas ? 1 : 0), co = (k.droite ? 1 : 0) - (k.gauche ? 1 : 0); let dx = 0, dz = 0;
+  if (ctrl.pov) { const f = [-Math.sin(ctrl.lacet), -Math.cos(ctrl.lacet)]; dx = f[0] * av - f[1] * co; dz = f[1] * av + f[0] * co; } else { dx = (-av + co) * .7071; dz = (-av - co) * .7071; }
+  const d = Math.hypot(dx, dz); a.avance = d > 0;
+  if (d > 0) { const pas = 5.5 * dt, nx = a.g.position.x + dx / d * pas, nz = a.g.position.z + dz / d * pas;
+    if ((nx / 38) * (nx / 38) + ((nz - 4) / 29) * ((nz - 4) / 29) < 1) { a.g.position.x = nx; a.g.position.z = nz; quete('pas', pas); }
+    let rr = Math.atan2(dx, dz) - a.g.rotation.y; rr = Math.atan2(Math.sin(rr), Math.cos(rr)); a.g.rotation.y += rr * Math.min(1, dt * 12); }
+  // agent le plus proche : touche E ou bouton pour lui parler
+  let pres = null, dm = 3.2; for (const b of TEAM) { if (b === a) continue; const dd = a.g.position.distanceTo(b.g.position); if (dd < dm) { dm = dd; pres = b; } }
+  if (ctrl.pres !== pres) { ctrl.pres = pres; const el = $('indice'); el.hidden = !pres; if (pres) el.textContent = 'Parler à ' + pres.nom + ' (touche E)'; } }
+function parlerAuProche() { const b = ctrl.pres; if (!b) return; quete('parle', b.id); choisirSansCamera(b); ouvrirCanal(b.id); }
+function choisirSansCamera(a) { if (choisi) choisi.halo.visible = false; choisi = a; a.halo.visible = true; fiche(); }
+function controle(on) { const j = PAR_ID.julian; ctrl.on = on; j.ctrl = on; if (!on) povActif(false);
+  if (on) { if (j.spot) { j.spot.pris = null; j.spot = null; } j.etat = 'pause'; j.assis = 0; j.tasse.visible = false; j.chemin = []; view.suit = j; view.tzoom = 1.9; toast('Tu contrôles Julian : flèches ou ZQSD pour marcher'); }
+  else { j.avance = false; j.t = 3; j.lieu = 'place'; view.suit = null; view.tzoom = 1; view.tx = BASE()[0]; view.tz = BASE()[1]; $('indice').hidden = true; ctrl.pres = null; }
+  $('b-jouer').textContent = on ? 'Rendre la main' : 'Prendre le contrôle de Julian'; $('b-jouer').classList.toggle('actif', on); $('b-pov').hidden = !on; $('croix').hidden = !on; }
+function povActif(on) { ctrl.pov = on; document.body.classList.toggle('pov', on); PAR_ID.julian.g.visible = !on; PAR_ID.julian.tag.style.display = on ? 'none' : ''; ctrl.lacet = PAR_ID.julian.g.rotation.y + Math.PI; $('b-pov').textContent = on ? 'Vue du dessus' : 'Vue 1re personne'; $('b-pov').classList.toggle('actif', on); canvas.style.cursor = on ? 'move' : ''; if (on) toast('Glisse pour regarder autour de toi'); }
+$('b-jouer').onclick = () => controle(!ctrl.on); $('b-pov').onclick = () => povActif(!ctrl.pov); $('indice').onclick = parlerAuProche;
+const touche = (e, v) => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (HAUT.includes(k)) ctrl.k.haut = v; else if (BAS.includes(k)) ctrl.k.bas = v; else if (GAUCHE.includes(k)) ctrl.k.gauche = v; else if (DROITE.includes(k)) ctrl.k.droite = v; else if (v && k === 'e' && ctrl.on) parlerAuProche(); else return; if (ctrl.on) e.preventDefault(); };
+addEventListener('keydown', e => touche(e, true)); addEventListener('keyup', e => touche(e, false)); addEventListener('blur', () => { ctrl.k = {}; });
+document.querySelectorAll('#croix button').forEach(b => { const f = v => e => { e.preventDefault(); ctrl.k[b.dataset.k] = v; }; b.addEventListener('pointerdown', f(true)); b.addEventListener('pointerup', f(false)); b.addEventListener('pointerleave', f(false)); b.addEventListener('pointercancel', f(false)); });
+
+// --- réunions
+const SIEGES = [0, 1, 2, 3, 4, 5].map(i => { const an = i / 6 * Math.PI * 2 + .5; return { x: Math.sin(an) * 3.1, zz: -13.4 + Math.cos(an) * 2.3, f: an + Math.PI, assis: 1 }; });
+$('b-reunion').onclick = () => { if (reunion) return finReunion();
+  $('salle-liste').innerHTML = TEAM.filter(a => a.type !== 'chef').map(a => '<label><input type="checkbox" value="' + a.id + '"' + (['atlas', 'rea', 'lina'].includes(a.id) ? ' checked' : '') + '> <span class="pastille" style="background:' + hex(a.couleur) + ';width:16px;height:16px"></span> ' + esc(a.nom) + ' · ' + esc(a.role) + '</label>').join(''); $('salle-choix').hidden = false; };
+$('salle-annuler').onclick = () => { $('salle-choix').hidden = true; };
+$('salle-choix').querySelector('form').onsubmit = e => { e.preventDefault(); const ids = [...document.querySelectorAll('#salle-liste input:checked')].map(i => i.value).slice(0, 6); if (!ids.length) return;
+  reunion = { membres: ids.map(i => PAR_ID[i]), sujet: $('salle-sujet').value.trim() || 'point d’équipe' }; reunion.membres.forEach((a, i) => { a.reunion = SIEGES[i]; });
+  $('salle-choix').hidden = true; $('b-reunion').textContent = 'Terminer la réunion'; $('b-reunion').classList.add('actif');
+  if (!canalSel.querySelector('[value=reunion]')) { const o = document.createElement('option'); o.value = 'reunion'; o.textContent = 'Réunion en cours'; canalSel.insertBefore(o, canalSel.children[1]); }
+  mem.set('bureau.chat.reunion', '[]'); canal = 'reunion'; canalSel.value = 'reunion'; vue('chat'); affiche(); quete('reunion');
+  if (!ctrl.on) { choisir(null); view.tx = 0; view.tz = -13; view.tzoom = 2.4; } toast('Réunion : ' + reunion.membres.map(a => a.nom).join(', ') + ' arrivent en salle'); $('texte').value = 'Sujet : ' + reunion.sujet + '. Faites chacun votre point.'; $('texte').focus(); };
+function finReunion() { reunion.membres.forEach(a => { a.reunion = null; a.t = 1; a.etat = 'pause'; }); reunion = null; $('b-reunion').textContent = 'Lancer une réunion'; $('b-reunion').classList.remove('actif');
+  const o = canalSel.querySelector('[value=reunion]'); if (o) o.remove(); canal = 'bureau'; canalSel.value = 'bureau'; affiche(); toast('Réunion terminée'); }
+majJournal(); setInterval(majJournal, 30000);
+
 cadre(); lumiere(); fiche(); affiche(); maj(); majRun(); setInterval(maj, 75000); setInterval(majRun, 180000); setInterval(() => { if (choisi) fiche(); }, 5000); requestAnimationFrame(tick);
 })();
 </script>
