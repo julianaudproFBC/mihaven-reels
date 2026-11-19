@@ -1,7 +1,7 @@
-name: Agent Reels Mi-Haven (10 par jour)
+name: Reels Mi-Haven validés (file uniquement)
 on:
   schedule:
-    # 10 passages par jour (heures UTC ; Casablanca = UTC+1)
+    # 10 passages par jour (heures UTC ; Casablanca = UTC+1). Depuis le 19/11 : publie seulement les Reels validés par Julian (queue.json). Plus aucune fabrication automatique.
     - cron: '0 0,2,5,7,10,12,14,17,19,21 * * *'
   workflow_dispatch:
     inputs:
