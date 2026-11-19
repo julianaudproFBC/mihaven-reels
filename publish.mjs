@@ -9,6 +9,9 @@ const queue = JSON.parse(fs.readFileSync('queue.json', 'utf8'));
 const done = JSON.parse(fs.readFileSync('published.json', 'utf8'));
 const next = queue.find(q => !done.some(d => d.id === q.id));
 if (!next) { console.log('File vide : tout est publié'); process.exit(0); }
+const ECART_H = 2.5; // garde-fou : jamais deux Reels à moins de 2 h 30 d'écart
+const dernier = done.map(d => Date.parse(d.at)).filter(Boolean).sort((a, b) => b - a)[0];
+if (dernier && Date.now() - dernier < ECART_H * 3600e3) { console.log('Dernier Reel il y a moins de ' + ECART_H + ' h : on attend'); process.exit(0); }
 const call = async (path, params = {}, method = 'GET') => {
   const u = new URL(API + path); for (const [k, v] of Object.entries({ ...params, access_token: token })) u.searchParams.set(k, v);
   const r = await fetch(u, { method }); const j = await r.json(); if (j.error) throw new Error(`${path}: ${j.error.message}`); return j; };

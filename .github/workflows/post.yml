@@ -1,8 +1,8 @@
 name: Reels Mi-Haven validés (file uniquement)
 on:
   schedule:
-    # 10 passages par jour (heures UTC ; Casablanca = UTC+1). Depuis le 19/11 : publie seulement les Reels validés par Julian (queue.json). Plus aucune fabrication automatique.
-    - cron: '0 0,2,5,7,10,12,14,17,19,21 * * *'
+    # 4 publications par jour : 9 h 30, 12 h 30, 16 h 30 et 20 h 30 heure de Casablanca (UTC+1). Publie seulement les Reels validés par Julian (queue.json).
+    - cron: '30 8,11,15,19 * * *'
   workflow_dispatch:
     inputs:
       test:
