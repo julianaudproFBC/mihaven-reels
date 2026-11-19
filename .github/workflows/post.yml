@@ -37,20 +37,20 @@ jobs:
           PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
         run: node publish.mjs
       - name: Créer un nouveau Reel
-        if: steps.q.outputs.pending == '0'
+        if: steps.q.outputs.pending == '0' && github.event_name == 'workflow_dispatch'
         run: node gen/make.mjs
       - name: Rendre le Reel
-        if: steps.q.outputs.pending == '0'
+        if: steps.q.outputs.pending == '0' && github.event_name == 'workflow_dispatch'
         env:
           CHROME: /usr/bin/google-chrome
         run: node gen/render.mjs
       - name: Publier le nouveau Reel
-        if: steps.q.outputs.pending == '0' && inputs.test != true
+        if: steps.q.outputs.pending == '0' && github.event_name == 'workflow_dispatch' && inputs.test != true
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
         run: node gen/post.mjs
       - name: Garder une copie (7 jours)
-        if: steps.q.outputs.pending == '0'
+        if: steps.q.outputs.pending == '0' && github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: reel-${{ github.run_number }}
